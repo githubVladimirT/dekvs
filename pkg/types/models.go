@@ -1,6 +1,6 @@
 package types
 
-import time
+import "time"
 
 // Operation types
 const (
@@ -9,28 +9,19 @@ const (
 	OpGet    = "GET"
 )
 
-// Command for Raft replication
+// Command для Raft репликации
 type Command struct {
-    Op      string    `json:"op"`
-    Key     string    `json:"key"`
-    Value   []byte    `json:"value,omitempty"`
-    TTL     time.Duration `json:"ttl,omitempty"`
-    Version int64     `json:"version,omitempty"`
+	Op      string        `json:"op"`
+	Key     string        `json:"key"`
+	Value   []byte        `json:"value,omitempty"`
+	TTL     time.Duration `json:"ttl,omitempty"`
+	Version int64         `json:"version,omitempty"`
 }
 
-// Response from Vault
+// Response от хранилища
 type Response struct {
-	Value   []byte    `json:"value,omitempty"`
-    Success bool      `json:"success"`
-    Error   string    `json:"error,omitempty"`
-    Version int64     `json:"version,omitempty"`
-}
-
-// NodeCache node configuration
-type NodeConfig struct {
-    ID        string   `yaml:"id"`
-    Addr      string   `yaml:"addr"`
-    RaftAddr  string   `yaml:"raft_addr"`
-    Peers     []string `yaml:"peers"`
-    DataDir   string   `yaml:"data_dir"`
+	Value   []byte `json:"value,omitempty"`
+	Success bool   `json:"success"`
+	Error   string `json:"error,omitempty"`
+	Version int64  `json:"version,omitempty"`
 }
