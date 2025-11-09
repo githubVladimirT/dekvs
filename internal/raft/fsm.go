@@ -42,9 +42,6 @@ func (f *FSM) Apply(log *raft.Log) interface{} {
 		if cmd.TTL > 0 {
 			opts = append(opts, store.WithTTL(cmd.TTL))
 		}
-		if cmd.Version > 0 {
-			opts = append(opts, store.WithVersion(cmd.Version))
-		}
 		if err := f.store.Put(ctx, cmd.Key, cmd.Value, opts...); err != nil {
 			return err
 		}
@@ -67,7 +64,6 @@ func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
 	defer f.mu.Unlock()
 
 	// For now, return a simple snapshot
-	// In production, you'd want to implement proper snapshotting
 	return &simpleSnapshot{}, nil
 }
 
@@ -77,7 +73,6 @@ func (f *FSM) Restore(rc io.ReadCloser) error {
 	defer f.mu.Unlock()
 
 	// For now, we'll just close the reader
-	// In production, you'd want to implement proper restoration
 	return rc.Close()
 }
 
@@ -85,8 +80,8 @@ func (f *FSM) Restore(rc io.ReadCloser) error {
 type simpleSnapshot struct{}
 
 func (s *simpleSnapshot) Persist(sink raft.SnapshotSink) error {
-	// In production, you'd write the actual snapshot data here
-	_, err := sink.Write([]byte("snapshot"))
+	// Write empty snapshot for now
+	_, err := sink.Write([]byte("{}"))
 	if err != nil {
 		sink.Cancel()
 		return err

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -25,7 +26,7 @@ func main() {
 
 	raftAddr := os.Getenv("RAFT_ADDR")
 	if raftAddr == "" {
-		raftAddr = ":9090"
+		raftAddr = "127.0.0.1:9090"
 	}
 
 	httpAddr := os.Getenv("HTTP_ADDR")
@@ -38,6 +39,17 @@ func main() {
 		dataDir = "./raft-data-" + nodeID
 	}
 
+	peers := []string{}
+	if peersEnv := os.Getenv("RAFT_PEERS"); peersEnv != "" {
+		peers = splitPeers(peersEnv)
+	}
+
+	fmt.Printf("Starting node: %s\n", nodeID)
+	fmt.Printf("  Raft address: %s\n", raftAddr)
+	fmt.Printf("  HTTP address: %s\n", httpAddr)
+	fmt.Printf("  Data directory: %s\n", dataDir)
+	fmt.Printf("  Peers: %v\n", peers)
+
 	// Create store
 	store := store.NewMemoryStore()
 
@@ -46,7 +58,7 @@ func main() {
 		NodeID:   nodeID,
 		RaftAddr: raftAddr,
 		DataDir:  dataDir,
-		Peers:    getPeersFromEnv(), // You can implement this function
+		Peers:    peers,
 	}
 
 	// Create Raft node
@@ -56,8 +68,7 @@ func main() {
 	}
 	defer node.Shutdown()
 
-	// Wait for leadership or follower state
-	fmt.Printf("Raft node started. ID: %s, Addr: %s\n", nodeID, raftAddr)
+	fmt.Printf("Raft node %s started successfully!\n", nodeID)
 
 	// Start HTTP server
 	httpServer := api.NewHTTPServer(node)
@@ -100,21 +111,31 @@ func main() {
 }
 
 func printClusterStatus(node *raft.Node) {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
 		state := node.State()
 		leader := node.Leader()
-		stats := node.Stats()
+		isLeader := node.IsLeader()
 
-		fmt.Printf("Cluster status - State: %s, Leader: %s, Term: %s\n",
-			state, leader, stats["term"])
+		status := "follower"
+		if isLeader {
+			status = "leader"
+		}
+
+		fmt.Printf("Node %s: %s, leader: %s\n",
+			node.Config().NodeID, status, leader)
+		fmt.Printf("STATE: %s\n", state)
 	}
 }
 
-func getPeersFromEnv() []string {
-	// Implement based on your discovery mechanism
-	// For example: os.Getenv("RAFT_PEERS") could be "node1@localhost:9090,node2@localhost:9091"
-	return []string{}
+func splitPeers(peers string) []string {
+	var result []string
+	for _, peer := range strings.Split(peers, ",") {
+		if peer != "" {
+			result = append(result, peer)
+		}
+	}
+	return result
 }
