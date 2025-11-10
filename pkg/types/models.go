@@ -7,6 +7,7 @@ const (
 	OpPut    = "PUT"
 	OpDelete = "DELETE"
 	OpGet    = "GET"
+	OpPost   = "POST"
 )
 
 // Command for Raft replication
