@@ -116,7 +116,7 @@ type memoryTransaction struct {
 
 func (tx *memoryTransaction) Put(key string, value []byte, opts ...Option) error {
 	tx.ops = append(tx.ops, operation{
-		op:    "PUT",
+		op:    types.OpPut,
 		key:   key,
 		value: value,
 		opts:  opts,
@@ -126,7 +126,7 @@ func (tx *memoryTransaction) Put(key string, value []byte, opts ...Option) error
 
 func (tx *memoryTransaction) Delete(key string) error {
 	tx.ops = append(tx.ops, operation{
-		op:  "DELETE",
+		op:  types.OpDelete,
 		key: key,
 	})
 	return nil
@@ -138,7 +138,7 @@ func (tx *memoryTransaction) Commit() error {
 
 	for _, op := range tx.ops {
 		switch op.op {
-		case "PUT":
+		case types.OpPut:
 			options := &options{}
 			for _, opt := range op.opts {
 				opt(options)
@@ -163,7 +163,7 @@ func (tx *memoryTransaction) Commit() error {
 
 			tx.store.data[op.key] = item
 
-		case "DELETE":
+		case types.OpDelete:
 			delete(tx.store.data, op.key)
 		}
 	}
