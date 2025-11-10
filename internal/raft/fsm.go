@@ -58,6 +58,8 @@ func (f *FSM) Apply(log *raft.Log) interface{} {
 	}
 }
 
+// TODO: Add snapshots implementation!!
+
 // Snapshot returns a snapshot of the FSM
 func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
 	f.mu.Lock()
