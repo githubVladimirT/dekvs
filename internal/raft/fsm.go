@@ -2,12 +2,13 @@ package raft
 
 import (
 	"context"
-	"dekvs/internal/store"
-	"dekvs/pkg/types"
 	"encoding/json"
 	"fmt"
 	"io"
 	"sync"
+
+	"github.com/githubVladimirT/dekvs/internal/store"
+	"github.com/githubVladimirT/dekvs/pkg/types"
 
 	"github.com/hashicorp/raft"
 )

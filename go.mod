@@ -1,4 +1,4 @@
-module dekvs
+module github.com/githubVladimirT/dekvs
 
 go 1.24.4
 

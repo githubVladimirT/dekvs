@@ -2,9 +2,10 @@ package store
 
 import (
 	"context"
-	"dekvs/pkg/types"
 	"sync"
 	"time"
+
+	"github.com/githubVladimirT/dekvs/pkg/types"
 )
 
 type memoryStore struct {
@@ -174,4 +175,3 @@ func (tx *memoryTransaction) Rollback() error {
 	tx.ops = make([]operation, 0)
 	return nil
 }
-

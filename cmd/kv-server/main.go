@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-	"dekvs/internal/api"
-	"dekvs/internal/raft"
-	"dekvs/internal/store"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +10,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/githubVladimirT/dekvs/internal/api"
+	"github.com/githubVladimirT/dekvs/internal/raft"
+	"github.com/githubVladimirT/dekvs/internal/store"
 )
 
 func main() {

@@ -2,8 +2,9 @@ package store
 
 import (
 	"context"
-	"dekvs/pkg/types"
 	"time"
+
+	"github.com/githubVladimirT/dekvs/pkg/types"
 )
 
 type Store interface {
@@ -22,9 +23,9 @@ type Transaction interface {
 }
 
 type options struct {
-    ttl     time.Duration
-    version int64
-    schema  interface{}
+	ttl     time.Duration
+	version int64
+	schema  interface{}
 }
 
 type Option func(*options)

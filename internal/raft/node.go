@@ -2,8 +2,6 @@ package raft
 
 import (
 	"context"
-	"dekvs/internal/store"
-	"dekvs/pkg/types"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -11,6 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/githubVladimirT/dekvs/internal/store"
+	"github.com/githubVladimirT/dekvs/pkg/types"
 
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb/v2"

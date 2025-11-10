@@ -1,11 +1,12 @@
 package api
 
 import (
-	"dekvs/internal/raft"
-	"dekvs/pkg/types"
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/githubVladimirT/dekvs/internal/raft"
+	"github.com/githubVladimirT/dekvs/pkg/types"
 )
 
 type HTTPServer struct {

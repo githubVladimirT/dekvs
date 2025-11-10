@@ -1,6 +1,6 @@
 package config
 
-// import "dekvs/pkg/types"
+// import "github.com/githubVladimirT/dekvs/pkg/types"
 
 type Config struct {
 	NodeID   string        `yaml:"node_id"`
