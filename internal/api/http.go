@@ -30,15 +30,15 @@ func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Route requests
 	switch {
-	case r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/key/"):
+	case r.Method == types.OpGet && strings.HasPrefix(r.URL.Path, "/key/"):
 		h.GetHandler(w, r)
-	case r.Method == "POST" && r.URL.Path == "/key":
+	case r.Method == types.OpPost && r.URL.Path == "/key":
 		h.PutHandler(w, r)
-	case r.Method == "DELETE" && strings.HasPrefix(r.URL.Path, "/key/"):
+	case r.Method == types.OpDelete && strings.HasPrefix(r.URL.Path, "/key/"):
 		h.DeleteHandler(w, r)
-	case r.Method == "GET" && r.URL.Path == "/cluster/status":
+	case r.Method == types.OpGet && r.URL.Path == "/cluster/status":
 		h.ClusterStatusHandler(w, r)
-	case r.Method == "GET" && r.URL.Path == "/cluster/nodes":
+	case r.Method == types.OpGet && r.URL.Path == "/cluster/nodes":
 		h.ClusterNodesHandler(w, r)
 	default:
 		http.NotFound(w, r)
