@@ -9,7 +9,7 @@ const (
 	OpGet    = "GET"
 )
 
-// Command для Raft репликации
+// Command for Raft replication
 type Command struct {
 	Op      string        `json:"op"`
 	Key     string        `json:"key"`
@@ -18,7 +18,7 @@ type Command struct {
 	Version int64         `json:"version,omitempty"`
 }
 
-// Response от хранилища
+// Response from store
 type Response struct {
 	Value   []byte `json:"value,omitempty"`
 	Success bool   `json:"success"`
