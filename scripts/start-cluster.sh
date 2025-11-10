@@ -3,7 +3,7 @@
 echo "Starting DeKVS 3-node cluster..."
 
 # Clean up previous data
-rm -rf ./raft-data-node1 ./raft-data-node2 ./raft-data-node3
+rm -rf ./raft-data*
 
 # Start node 1
 echo "Starting node-1..."
