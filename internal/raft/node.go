@@ -111,48 +111,6 @@ func NewNode(config *Config, store store.Store) (*Node, error) {
 		config: config,
 	}
 
-	// if len(config.Peers) == 0 {
-	// 	// Single-node cluster
-	// 	configuration := raft.Configuration{
-	// 		Servers: []raft.Server{
-	// 			{
-	// 				ID:      raft.ServerID(config.NodeID),
-	// 				Address: raft.ServerAddress(config.RaftAddr),
-	// 			},
-	// 		},
-	// 	}
-	// 	r.BootstrapCluster(configuration)
-	// 	fmt.Printf("Node %s: Bootstrapped as single-node cluster\n", config.NodeID)
-	// } else {
-	// 	servers := []raft.Server{
-	// 		{
-	// 			ID:      raft.ServerID(config.NodeID),
-	// 			Address: raft.ServerAddress(config.RaftAddr),
-	// 		},
-	// 	}
-
-	// 	for _, peer := range config.Peers {
-	// 		parts := strings.Split(peer, "@")
-	// 		if len(parts) == 2 {
-	// 			servers = append(servers, raft.Server{
-	// 				ID:      raft.ServerID(parts[0]),
-	// 				Address: raft.ServerAddress(parts[1]),
-	// 			})
-	// 		}
-	// 	}
-
-	// 	configuration := raft.Configuration{Servers: servers}
-	// 	r.BootstrapCluster(configuration)
-	// 	fmt.Printf("Node %s: Bootstrapped with peers: %v\n", config.NodeID, config.Peers)
-	// }
-
-	// node.isReady = true
-
-	// go node.monitorState()
-	// go node.autoSnapshot()
-
-	// return node, nil
-
 	if err := node.initCluster(); err != nil {
 		return nil, fmt.Errorf("failed to initialize cluster: %v", err)
 	}
@@ -310,71 +268,6 @@ func (n *Node) ensureAllPeersInCluster() {
 		}
 	}
 }
-
-// func (n *Node) monitorState() {
-// 	lastState := raft.Follower
-
-// 	for {
-// 		time.Sleep(1 * time.Second)
-// 		currentState := n.raft.State()
-
-// 		if currentState != lastState {
-// 			fmt.Printf("Node %s state changed: %s -> %s\n",
-// 				n.config.NodeID, lastState, currentState)
-// 			lastState = currentState
-
-// 			// If leader, add peers to cluster
-// 			if currentState == raft.Leader {
-// 				n.addPeersToCluster()
-// 			}
-// 		}
-// 	}
-// }
-
-// func (n *Node) addPeersToCluster() {
-// 	fmt.Printf("Node %s (leader) adding peers to cluster: %v\n", n.config.NodeID, n.config.Peers)
-
-// 	for _, peer := range n.config.Peers {
-// 		parts := strings.Split(peer, "@")
-// 		if len(parts) != 2 {
-// 			fmt.Printf("Invalid peer format: %s\n", peer)
-// 			continue
-// 		}
-
-// 		serverID := raft.ServerID(parts[0])
-// 		serverAddr := raft.ServerAddress(parts[1])
-
-// 		if serverID == raft.ServerID(n.config.NodeID) {
-// 			continue
-// 		}
-
-// 		configFuture := n.raft.GetConfiguration()
-// 		if err := configFuture.Error(); err != nil {
-// 			fmt.Printf("Failed to get raft configuration: %v\n", err)
-// 			continue
-// 		}
-
-// 		exists := false
-// 		for _, server := range configFuture.Configuration().Servers {
-// 			if server.ID == serverID {
-// 				exists = true
-// 				break
-// 			}
-// 		}
-
-// 		if !exists {
-// 			fmt.Printf("Adding voter %s at %s\n", serverID, serverAddr)
-// 			future := n.raft.AddVoter(serverID, serverAddr, 0, 10*time.Second)
-// 			if err := future.Error(); err != nil {
-// 				fmt.Printf("Failed to add voter %s: %v\n", serverID, err)
-// 			} else {
-// 				fmt.Printf("Successfully added voter %s\n", serverID)
-// 			}
-// 		} else {
-// 			fmt.Printf("Voter %s already exists in cluster\n", serverID)
-// 		}
-// 	}
-// }
 
 // ApplyCommand applies a command through Raft consensus
 func (n *Node) ApplyCommand(cmd types.Command) error {

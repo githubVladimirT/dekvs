@@ -51,10 +51,8 @@ func main() {
 	fmt.Printf("  Data directory: %s\n", dataDir)
 	fmt.Printf("  Peers: %v\n", peers)
 
-	// Create store
 	store := store.NewMemoryStore()
 
-	// Create Raft configuration
 	raftConfig := &raft.Config{
 		NodeID:   nodeID,
 		RaftAddr: raftAddr,
@@ -62,7 +60,6 @@ func main() {
 		Peers:    peers,
 	}
 
-	// Create Raft node
 	node, err := raft.NewNode(raftConfig, store)
 	if err != nil {
 		log.Fatal("Failed to create Raft node:", err)
@@ -71,7 +68,6 @@ func main() {
 
 	fmt.Printf("Raft node %s started successfully!\n", nodeID)
 
-	// Start HTTP server
 	httpServer := api.NewHTTPServer(node)
 
 	server := &http.Server{
@@ -79,7 +75,6 @@ func main() {
 		Handler: httpServer,
 	}
 
-	// Start server in a goroutine
 	go func() {
 		fmt.Printf("HTTP server starting on %s\n", httpAddr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -87,16 +82,13 @@ func main() {
 		}
 	}()
 
-	// Print cluster status periodically
 	go printClusterStatus(node)
 
-	// Wait for interrupt signal to gracefully shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 	fmt.Println("Shutting down server...")
 
-	// Create a deadline for graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 

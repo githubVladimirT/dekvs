@@ -1,7 +1,5 @@
 package config
 
-// import "github.com/githubVladimirT/dekvs/pkg/types"
-
 type Config struct {
 	NodeID   string        `yaml:"node_id"`
 	HTTPAddr string        `yaml:"http_addr"`
