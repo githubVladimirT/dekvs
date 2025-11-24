@@ -1,14 +1,11 @@
-# Golang DEcentralised Key-Value Storage
+# Golang Decentralised Key-Value Storage
 
-## Architecture (approximate):
+## Overview
 
-#### Client → HTTP/gRPC API → Raft Consensus → Store → Replication
 
-### Write data
+## Features
 
-#### Client → HTTP Put → Raft Leader → Log Replication → Majority Ack → Apply to Store
 
-### Read data
+## License
 
-#### Client → HTTP Get → Check Consistency Level → Read from Store → Response
-
+DeKVS is Apache 2.0 licensed.

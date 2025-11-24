@@ -11,8 +11,15 @@ type Store interface {
 	Get(ctx context.Context, key string) (*types.Response, error)
 	Put(ctx context.Context, key string, value []byte, opts ...Option) error
 	Delete(ctx context.Context, key string) error
+
 	BeginTransaction() (Transaction, error)
 	Close() error
+}
+
+type Snapshotter interface {
+	Export() ([]byte, error)
+	Import(data []byte) error
+	LastSnapshotTime() time.Time
 }
 
 type Transaction interface {

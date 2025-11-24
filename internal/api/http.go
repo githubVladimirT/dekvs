@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/githubVladimirT/dekvs/internal/raft"
+	"github.com/githubVladimirT/dekvs/internal/store"
 	"github.com/githubVladimirT/dekvs/pkg/types"
 )
 
@@ -31,16 +32,20 @@ func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Route requests
 	switch {
-	case r.Method == types.OpGet && strings.HasPrefix(r.URL.Path, "/key/"):
+	case r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/key/"):
 		h.GetHandler(w, r)
-	case r.Method == types.OpPost && r.URL.Path == "/key":
+	case r.Method == "POST" && r.URL.Path == "/key":
 		h.PutHandler(w, r)
-	case r.Method == types.OpDelete && strings.HasPrefix(r.URL.Path, "/key/"):
+	case r.Method == "DELETE" && strings.HasPrefix(r.URL.Path, "/key/"):
 		h.DeleteHandler(w, r)
-	case r.Method == types.OpGet && r.URL.Path == "/cluster/status":
+	case r.Method == "GET" && r.URL.Path == "/cluster/status":
 		h.ClusterStatusHandler(w, r)
-	case r.Method == types.OpGet && r.URL.Path == "/cluster/nodes":
+	case r.Method == "GET" && r.URL.Path == "/cluster/nodes":
 		h.ClusterNodesHandler(w, r)
+	case r.Method == "POST" && r.URL.Path == "/snapshot/create":
+		h.CreateSnapshotHandler(w, r)
+	case r.Method == "GET" && r.URL.Path == "/snapshot/status":
+		h.SnapshotStatusHandler(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -153,4 +158,38 @@ func (h *HTTPServer) ClusterNodesHandler(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *HTTPServer) CreateSnapshotHandler(w http.ResponseWriter, r *http.Request) {
+	if err := h.node.CreateSnapshot(); err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "snapshot_triggered",
+		"message": "Snapshot creation initiated successfully",
+	})
+}
+
+func (h *HTTPServer) SnapshotStatusHandler(w http.ResponseWriter, r *http.Request) {
+	stats := h.node.Stats()
+
+	status := map[string]interface{}{
+		"snapshot_version":    stats["snapshot_version"],
+		"last_snapshot_index": stats["last_snapshot_index"],
+		"last_log_index":      stats["last_log_index"],
+		"applied_index":       stats["applied_index"],
+		"commit_index":        stats["commit_index"],
+	}
+
+	if store, ok := h.node.GetStore().(store.Snapshotter); ok {
+		status["snapshot_supported"] = true
+		status["last_snapshot_time"] = store.LastSnapshotTime()
+	} else {
+		status["snapshot_supported"] = false
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(status)
 }
