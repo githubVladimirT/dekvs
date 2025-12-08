@@ -1,5 +1,5 @@
 /raft-data*/
 /kv-server
 /kv-cli
-/.cspell/
 /.vscode/
+/.cspell/
