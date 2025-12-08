@@ -19,6 +19,7 @@ func NewHTTPServer(node *raft.Node) *HTTPServer {
 }
 
 func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// set HTTP headers
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -66,7 +67,7 @@ func (h *HTTPServer) GetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{ // interface{} --> any
 		"key":     key,
 		"value":   string(resp.Value),
 		"version": resp.Version,
@@ -127,7 +128,7 @@ func (h *HTTPServer) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *HTTPServer) ClusterStatusHandler(w http.ResponseWriter, r *http.Request) {
 	config := h.node.Config()
-	status := map[string]interface{}{
+	status := map[string]any{ // interface{} --> any
 		"node_id":   config.NodeID,
 		"state":     h.node.State(),
 		"leader":    h.node.Leader(),
@@ -143,8 +144,8 @@ func (h *HTTPServer) ClusterNodesHandler(w http.ResponseWriter, r *http.Request)
 	config := h.node.Config()
 	stats := h.node.Stats()
 
-	response := map[string]interface{}{
-		"current_node": map[string]interface{}{
+	response := map[string]any{  // interface{} --> any
+		"current_node": map[string]any{ // interface{} --> any
 			"id":      config.NodeID,
 			"address": config.RaftAddr,
 			"state":   h.node.State(),
@@ -172,7 +173,7 @@ func (h *HTTPServer) CreateSnapshotHandler(w http.ResponseWriter, r *http.Reques
 func (h *HTTPServer) SnapshotStatusHandler(w http.ResponseWriter, r *http.Request) {
 	stats := h.node.Stats()
 
-	status := map[string]interface{}{
+	status := map[string]any{ // interface{} --> any
 		"snapshot_version":    stats["snapshot_version"],
 		"last_snapshot_index": stats["last_snapshot_index"],
 		"last_log_index":      stats["last_log_index"],

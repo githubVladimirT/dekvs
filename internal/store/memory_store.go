@@ -24,6 +24,14 @@ type item struct {
 	Expiry  *time.Time `json:"expiry,omitempty"`
 }
 
+type SnapshotData struct {
+	Version   int64             `json:"version"`
+	Timestamp time.Time         `json:"timestamp"`
+	KeyCount  int               `json:"key_count"`
+	Data      map[string]*item  `json:"data"`
+	Metadata  map[string]string `json:"metadata,omitempty"`
+}
+
 var _ Store = (*memoryStore)(nil)
 var _ Snapshotter = (*memoryStore)(nil)
 
@@ -53,12 +61,12 @@ func (m *memoryStore) Get(ctx context.Context, key string) (*types.Response, err
 	}
 
 	fmt.Printf("MemoryStore.Get: Found key: %s, value length: %d\n", key, len(item.Value))
+
 	return &types.Response{
 		Value:   item.Value,
 		Success: true,
 		Version: item.Version,
 	}, nil
-
 }
 
 func (m *memoryStore) Put(ctx context.Context, key string, value []byte, opts ...Option) error {
@@ -105,16 +113,8 @@ func (m *memoryStore) Delete(ctx context.Context, key string) error {
 	fmt.Printf("MemoryStore.Delete: Deleting key: %s\n", key)
 
 	delete(m.data, key)
+
 	return nil
-}
-
-func (m *memoryStore) BeginTransaction() (Transaction, error) {
-	fmt.Println("MemoryStore: Beginning transaction")
-
-	return &memoryTransaction{
-		store: m,
-		ops:   make([]operation, 0),
-	}, nil
 }
 
 func (m *memoryStore) Close() error {
@@ -130,36 +130,40 @@ func (m *memoryStore) Export() ([]byte, error) {
 
 	fmt.Printf("MemoryStore.Export: Exporting %d keys\n", len(m.data))
 
-	dataCopy := make(map[string]*item)
-	for k, v := range m.data {
-		if v.Expiry != nil && time.Now().After(*v.Expiry) {
-			continue
-		}
-
-		dataCopy[k] = &item{
-			Value:   v.Value,
-			Version: v.Version,
-			Expiry:  v.Expiry,
-		}
-	}
-
-	snapshot := struct {
-		Data      map[string]*item `json:"data"`
-		Version   int64            `json:"version"`
-		Timestamp time.Time        `json:"timestamp"`
-	}{
-		Data:      m.data,
+	snapshot := SnapshotData{
 		Version:   m.version,
 		Timestamp: time.Now(),
+		KeyCount:  len(m.data),
+		Data:      make(map[string]*item),
+		Metadata: map[string]string{
+			"exported_by": "dekvs",
+			"format":      "v2",
+		},
 	}
+
+	now := time.Now()
+	validKeys := 0
+	for key, it := range m.data {
+		if it.Expiry != nil && now.After(*it.Expiry) {
+			continue
+		}
+		snapshot.Data[key] = &item{
+			Value:   append([]byte{}, it.Value...),
+			Version: it.Version,
+			Expiry:  it.Expiry,
+		}
+		validKeys++
+	}
+
+	snapshot.KeyCount = validKeys
+	fmt.Printf("MemoryStore.Export: Exported %d valid keys (skipped %d expired)\n",
+		validKeys, len(m.data)-validKeys)
 
 	data, err := json.Marshal(snapshot)
 	if err != nil {
-		fmt.Printf("MemoryStore.Export: Marshal failed: %v\n", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal snapshot: %v", err)
 	}
 
-	fmt.Printf("MemoryStore.Export: Successfully exported %d bytes (%d keys)\n", len(data), len(dataCopy))
 	return data, nil
 }
 
@@ -169,108 +173,40 @@ func (m *memoryStore) Import(data []byte) error {
 
 	fmt.Printf("MemoryStore.Import: Importing %d bytes\n", len(data))
 
-	var snapshot struct {
-		Data      map[string]*item `json:"data"`
-		Version   int64            `json:"version"`
-		Timestamp time.Time        `json:"timestamp"`
+	var snapshot SnapshotData
+	if err := json.Unmarshal(data, &snapshot); err != nil {
+		return fmt.Errorf("failed to unmarshal snapshot: %v", err)
 	}
 
-	if err := json.Unmarshal(data, &snapshot); err != nil {
-		fmt.Printf("MemoryStore.Import: Unmarshal failed: %v\n", err)
-		return err
+	if snapshot.Data == nil {
+		return fmt.Errorf("invalid snapshot: data is nil")
 	}
 
 	m.data = snapshot.Data
 	m.version = snapshot.Version
-	m.lastSnapshotTime = snapshot.Timestamp
 
-	fmt.Printf("MemoryStore.Import: Successfully imported %d keys, version: %d\n", len(m.data), m.version)
+	fmt.Printf("MemoryStore.Import: Successfully imported %d keys, version: %d (snapshot from %s)\n",
+		snapshot.KeyCount, snapshot.Version, snapshot.Timestamp.Format(time.RFC3339))
+
+	// fmt.Printf("[!] MemoryStore.Import: DATA: %s", m.data)
+
+	return nil
+}
+
+func (m *memoryStore) Clear() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	fmt.Println("MemoryStore.Clear: Clearing all data")
+	m.data = make(map[string]*item)
+	m.version = 0
+
 	return nil
 }
 
 func (m *memoryStore) LastSnapshotTime() time.Time {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+
 	return m.lastSnapshotTime
-}
-
-// Transaction implementation
-type operation struct {
-	op    string
-	key   string
-	value []byte
-	opts  []Option
-}
-
-type memoryTransaction struct {
-	store *memoryStore
-	ops   []operation
-}
-
-func (tx *memoryTransaction) Put(key string, value []byte, opts ...Option) error {
-	tx.ops = append(tx.ops, operation{
-		op:    "PUT",
-		key:   key,
-		value: value,
-		opts:  opts,
-	})
-	return nil
-}
-
-func (tx *memoryTransaction) Delete(key string) error {
-	tx.ops = append(tx.ops, operation{
-		op:  "DELETE",
-		key: key,
-	})
-	return nil
-}
-
-func (tx *memoryTransaction) Commit() error {
-	tx.store.mu.Lock()
-	defer tx.store.mu.Unlock()
-
-	fmt.Printf("MemoryStore.Transaction: Committing %d operations\n", len(tx.ops))
-
-	for _, op := range tx.ops {
-		switch op.op {
-		case "PUT":
-			options := &options{}
-			for _, opt := range op.opts {
-				opt(options)
-			}
-
-			if options.version > 0 {
-				if existing, exists := tx.store.data[op.key]; exists && existing.Version != options.version {
-					return types.ErrVersionConflict
-				}
-			}
-
-			tx.store.version++
-			item := &item{
-				Value:   op.value,
-				Version: tx.store.version,
-			}
-
-			if options.ttl > 0 {
-				expiry := time.Now().Add(options.ttl)
-				item.Expiry = &expiry
-			}
-
-			tx.store.data[op.key] = item
-
-		case "DELETE":
-			delete(tx.store.data, op.key)
-		}
-	}
-
-	fmt.Println("MemoryStore.Transaction: Commit successful")
-
-	return nil
-}
-
-func (tx *memoryTransaction) Rollback() error {
-	fmt.Println("MemoryStore.Transaction: Rolling back transaction")
-
-	tx.ops = make([]operation, 0)
-	return nil
 }

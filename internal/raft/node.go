@@ -42,7 +42,7 @@ func (n *Node) GetStore() store.Store {
 	return n.store
 }
 
-func (n *Node) GetRaft() interface{} {
+func (n *Node) GetRaft() any { // interface{} --> any
 	return n.raft
 }
 
@@ -63,8 +63,11 @@ func NewNode(config *Config, store store.Store) (*Node, error) {
 	raftConfig.LocalID = raft.ServerID(config.NodeID)
 
 	raftConfig.SnapshotInterval = 30 * time.Second
-	raftConfig.SnapshotThreshold = 100
+	raftConfig.SnapshotThreshold = 10
 	raftConfig.TrailingLogs = 100
+
+	fmt.Printf("Node %s: Snapshot config - Interval: %v, Threshold: %d\n",
+		config.NodeID, raftConfig.SnapshotInterval, raftConfig.SnapshotThreshold)
 
 	raftConfig.ElectionTimeout = 2000 * time.Millisecond
 	raftConfig.LeaderLeaseTimeout = 1000 * time.Millisecond
@@ -117,13 +120,29 @@ func NewNode(config *Config, store store.Store) (*Node, error) {
 
 	node.isReady = true
 
+	if hasSnapshot, err := snapshotStore.List(); err == nil && len(hasSnapshot) > 0 {
+		fmt.Printf("Node %s: Found %d existing snapshots, will restore on startup\n",
+			config.NodeID, len(hasSnapshot))
+	}
+
 	go node.enhancedClusterMonitor()
 
 	return node, nil
 }
 
 func (n *Node) initCluster() error {
+	hasExistingState, err := n.hasExistingState()
+	if err != nil {
+		return fmt.Errorf("failed to check existing state: %v", err)
+	}
+
+	if hasExistingState {
+		fmt.Printf("Node %s: Existing Raft state detected, skipping bootstrap\n", n.config.NodeID)
+		return nil
+	}
+
 	if len(n.config.Peers) == 0 {
+		// Single node cluster
 		configuration := raft.Configuration{
 			Servers: []raft.Server{
 				{
@@ -132,39 +151,53 @@ func (n *Node) initCluster() error {
 				},
 			},
 		}
+		fmt.Printf("Node %s: Bootstrapping as new single-node cluster\n", n.config.NodeID)
+		return n.raft.BootstrapCluster(configuration).Error()
+	} else {
+		servers := []raft.Server{
+			{
+				ID:      raft.ServerID(n.config.NodeID),
+				Address: raft.ServerAddress(n.config.RaftAddr),
+			},
+		}
 
-		fmt.Printf("Node %s: Bootstrapping as single-node cluster\n", n.config.NodeID)
+		for _, peer := range n.config.Peers {
+			parts := strings.Split(peer, "@")
+			if len(parts) == 2 {
+				servers = append(servers, raft.Server{
+					ID:      raft.ServerID(parts[0]),
+					Address: raft.ServerAddress(parts[1]),
+				})
+			}
+		}
+
+		configuration := raft.Configuration{Servers: servers}
+		fmt.Printf("Node %s: Bootstrapping as new multi-node cluster with %d servers\n",
+			n.config.NodeID, len(servers))
 		return n.raft.BootstrapCluster(configuration).Error()
 	}
+}
 
-	servers := []raft.Server{
-		{
-			ID:      raft.ServerID(n.config.NodeID),
-			Address: raft.ServerAddress(n.config.RaftAddr),
-		},
+func (n *Node) hasExistingState() (bool, error) {
+	stats := n.raft.Stats()
+	lastSnapshotIndex := stats["last_snapshot_index"]
+
+	if lastSnapshotIndex != "" && lastSnapshotIndex != "0" {
+		fmt.Printf("Node %s: Existing state detected via snapshot index: %s\n",
+			n.config.NodeID, lastSnapshotIndex)
+		return true, nil
 	}
 
-	for _, peer := range n.config.Peers {
-		parts := strings.Split(peer, "@")
-
-		if len(parts) == 2 {
-			servers = append(servers, raft.Server{
-				ID:      raft.ServerID(parts[0]),
-				Address: raft.ServerAddress(parts[1]),
-			})
-			fmt.Printf("Node %s: Added peer %s to bootstrap configuration\n", n.config.NodeID, peer)
-		}
+	lastLogIndex := stats["last_log_index"]
+	if lastLogIndex != "" && lastLogIndex != "0" {
+		fmt.Printf("Node %s: Existing state detected via log index: %s\n",
+			n.config.NodeID, lastLogIndex)
+		return true, nil
 	}
 
-	configuration := raft.Configuration{Servers: servers}
+	fmt.Printf("Node %s: No existing state found\n", n.config.NodeID)
 
-	if err := n.raft.BootstrapCluster(configuration).Error(); err != nil {
-		fmt.Printf("Node %s: Bootstrap may have failed (normal if cluster exists): %v\n", n.config.NodeID, err)
-	} else {
-		fmt.Printf("Node %s: Successfully bootstrapped cluster with %d servers\n", n.config.NodeID, len(servers))
-	}
-
-	return nil
+	return false, nil
 }
 
 func (n *Node) enhancedClusterMonitor() {

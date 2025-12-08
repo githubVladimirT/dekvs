@@ -1,6 +1,8 @@
 package raft
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -24,7 +26,7 @@ func NewFSM(store store.Store) *FSM {
 	}
 }
 
-func (f *FSM) Apply(log *raft.Log) interface{} {
+func (f *FSM) Apply(log *raft.Log) any { // interface{} --> any
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -83,6 +85,11 @@ func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
 		return &simpleSnapshot{}, nil
 	}
 
+	if len(data) == 0 {
+		fmt.Println("FSM.Snapshot: Exported data is empty!")
+		return &simpleSnapshot{}, nil
+	}
+
 	fmt.Printf("FSM.Snapshot: Created snapshot with %d bytes\n", len(data))
 	return &KVSnapshot{data: data}, nil
 }
@@ -94,44 +101,47 @@ func (f *FSM) Restore(rc io.ReadCloser) error {
 
 	fmt.Println("FSM.Restore: Restoring from snapshot...")
 
-	snapshotter, ok := f.store.(store.Snapshotter)
-	if !ok {
-		fmt.Println("Store doesn't support snapshots, skipping restore")
-		return nil
-	}
-
-	// HMM.... I'll think about this later..... Probably....
-	// data, err := io.ReadAll(rc)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to read snapshot: %v", err)
-	// }
-
-	// if err := snapshotter.Import(data); err != nil {
-	// 	return fmt.Errorf("failed to import snapshot: %v", err)
-	// }
-
 	data, err := io.ReadAll(rc)
 	if err != nil {
-		fmt.Printf("FSM.Restore: Failed to read snapshot: %v\n", err)
 		return fmt.Errorf("failed to read snapshot: %v", err)
 	}
+
+	fmt.Printf("FSM.Restore: Read %d bytes from snapshot\n", len(data))
 
 	if len(data) == 0 {
 		fmt.Println("FSM.Restore: Empty snapshot, nothing to restore")
 		return nil
 	}
 
-	if !json.Valid(data) {
-		fmt.Println("FSM.Restore: Invalid JSON in snapshot, using empty data")
-		return nil
+	var uncompressedData []byte
+	if len(data) >= 2 && data[0] == 0x1f && data[1] == 0x8b {
+		fmt.Println("FSM.Restore: Detected gzip compressed data, decompressing...")
+		gr, err := gzip.NewReader(bytes.NewReader(data))
+		if err != nil {
+			return fmt.Errorf("failed to create gzip reader: %v", err)
+		}
+		defer gr.Close()
+
+		uncompressedData, err = io.ReadAll(gr)
+		if err != nil {
+			return fmt.Errorf("failed to decompress snapshot: %v", err)
+		}
+		fmt.Printf("FSM.Restore: Decompressed %d -> %d bytes\n", len(data), len(uncompressedData))
+	} else {
+		uncompressedData = data
+		fmt.Printf("FSM.Restore: Using uncompressed data (%d bytes)\n", len(uncompressedData))
 	}
 
-	if err := snapshotter.Import(data); err != nil {
-		fmt.Printf("FSM.Restore: Import failed: %v\n", err)
-		return fmt.Errorf("failed to import snapshot: %v", err)
+	snapshotter, ok := f.store.(store.Snapshotter)
+	if !ok {
+		return fmt.Errorf("store doesn't support snapshot restoration")
 	}
 
-	fmt.Printf("FSM.Restore: Successfully restored snapshot (%d bytes)\n", len(data))
+	if err := snapshotter.Import(uncompressedData); err != nil {
+		return fmt.Errorf("failed to import snapshot data: %v", err)
+	}
+
+	fmt.Printf("FSM.Restore: Successfully restored snapshot (%d bytes)\n", len(uncompressedData))
 	return nil
 }
 
@@ -152,14 +162,33 @@ func (s *KVSnapshot) Persist(sink raft.SnapshotSink) error {
 		return sink.Close()
 	}
 
-	if _, err := sink.Write(s.data); err != nil {
-		fmt.Printf("KVSnapshot.Persist: Write failed: %v\n", err)
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+
+	if _, err := gz.Write(s.data); err != nil {
 		sink.Cancel()
-		return err
+		return fmt.Errorf("failed to compress data: %v", err)
 	}
 
-	fmt.Println("KVSnapshot.Persist: Successfully wrote snapshot data")
+	if err := gz.Close(); err != nil {
+		sink.Cancel()
+		return fmt.Errorf("failed to close gzip writer: %v", err)
+	}
+
+	compressedData := buf.Bytes()
+	compressionRatio := float64(len(s.data)) / float64(len(compressedData))
+
+	fmt.Printf("KVSnapshot.Persist: Compressed %d -> %d bytes (ratio: %.2f)\n",
+		len(s.data), len(compressedData), compressionRatio)
+
+	if _, err := sink.Write(compressedData); err != nil {
+		sink.Cancel()
+		return fmt.Errorf("failed to write compressed data: %v", err)
+	}
+
+	fmt.Println("KVSnapshot.Persist: Successfully wrote compressed snapshot")
 	return sink.Close()
+
 }
 
 func (s *KVSnapshot) Release() {
@@ -172,7 +201,7 @@ type simpleSnapshot struct{}
 func (s *simpleSnapshot) Persist(sink raft.SnapshotSink) error {
 	fmt.Println("simpleSnapshot.Persist: Creating empty snapshot")
 
-	emptyData := map[string]interface{}{
+	emptyData := map[string]any{ // interface{} --> any
 		"message":   "empty snapshot - store doesn't support snapshots",
 		"timestamp": time.Now().Format(time.RFC3339),
 	}

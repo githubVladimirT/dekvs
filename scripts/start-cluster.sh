@@ -27,7 +27,8 @@ export NODE_ID="node-1"
 export RAFT_ADDR="127.0.0.1:9090"
 export HTTP_ADDR=":8080"
 export DATA_DIR="./raft-data-node1"
-export RAFT_PEERS="node-2@127.0.0.1:9091,node-3@127.0.0.1:9092"
+# export RAFT_PEERS="node-2@127.0.0.1:9091,node-3@127.0.0.1:9092"
+export RAFT_PEERS=""
 go run ./cmd/kv-server &
 
 # Wait for node 1 to start
@@ -68,8 +69,8 @@ echo "=== All nodes started ==="
 echo "Waiting for cluster formation..."
 sleep 20
 
-echo "=== Testing Cluster Status ==="
-./scripts/test-cluster-formation.sh
+# echo "=== Testing Cluster Status ==="
+# ./scripts/test-cluster-formation.sh
 
 echo ""
 echo "=== Cluster Startup Complete ==="

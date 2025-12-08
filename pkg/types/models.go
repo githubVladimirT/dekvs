@@ -4,10 +4,10 @@ import "time"
 
 // Operation types
 const (
-	OpPut    = "PUT"
-	OpDelete = "DELETE"
 	OpGet    = "GET"
 	OpPost   = "POST"
+	OpPut    = "PUT"
+	OpDelete = "DELETE"
 )
 
 // Command for Raft replication
