@@ -17,7 +17,8 @@ import (
 
 type FSM struct {
 	store store.Store
-	mu    sync.Mutex
+	// print 'hello'
+	mu sync.Mutex
 }
 
 func NewFSM(store store.Store) *FSM {
@@ -90,8 +91,27 @@ func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
 		return &simpleSnapshot{}, nil
 	}
 
-	fmt.Printf("FSM.Snapshot: Created snapshot with %d bytes\n", len(data))
-	return &KVSnapshot{data: data}, nil
+	var snapshotWithMeta struct {
+		Data      []byte    `json:"data"`
+		Timestamp time.Time `json:"timestamp"`
+		Version   string    `json:"version"`
+	}
+
+	snapshotWithMeta.Data = data
+	snapshotWithMeta.Timestamp = time.Now()
+	snapshotWithMeta.Version = "v1"
+
+	metaData, err := json.Marshal(snapshotWithMeta)
+	if err != nil {
+		fmt.Printf("FSM.Snapshot: Failed to add metadata: %v\n", err)
+		metaData = data
+	} else {
+		fmt.Printf("FSM.Snapshot: Added metadata, total size: %d bytes\n", len(metaData))
+	}
+
+	fmt.Printf("FSM.Snapshot: Created snapshot with %d bytes\n", len(metaData))
+	return &KVSnapshot{data: metaData}, nil
+
 }
 
 func (f *FSM) Restore(rc io.ReadCloser) error {
@@ -108,15 +128,26 @@ func (f *FSM) Restore(rc io.ReadCloser) error {
 
 	fmt.Printf("FSM.Restore: Read %d bytes from snapshot\n", len(data))
 
-	if len(data) == 0 {
-		fmt.Println("FSM.Restore: Empty snapshot, nothing to restore")
-		return nil
+	var snapshotWithMeta struct {
+		Data      []byte    `json:"data"`
+		Timestamp time.Time `json:"timestamp"`
+		Version   string    `json:"version"`
+	}
+	var snapshotData []byte
+
+	if err := json.Unmarshal(data, &snapshotWithMeta); err == nil && snapshotWithMeta.Data != nil {
+		fmt.Printf("FSM.Restore: Snapshot with metadata - Timestamp: %v, Version: %s\n",
+			snapshotWithMeta.Timestamp, snapshotWithMeta.Version)
+		snapshotData = snapshotWithMeta.Data
+	} else {
+		fmt.Println("FSM.Restore: Old snapshot format (no metadata)")
+		snapshotData = data
 	}
 
 	var uncompressedData []byte
-	if len(data) >= 2 && data[0] == 0x1f && data[1] == 0x8b {
+	if len(snapshotData) >= 2 && snapshotData[0] == 0x1f && snapshotData[1] == 0x8b {
 		fmt.Println("FSM.Restore: Detected gzip compressed data, decompressing...")
-		gr, err := gzip.NewReader(bytes.NewReader(data))
+		gr, err := gzip.NewReader(bytes.NewReader(snapshotData))
 		if err != nil {
 			return fmt.Errorf("failed to create gzip reader: %v", err)
 		}
@@ -126,9 +157,10 @@ func (f *FSM) Restore(rc io.ReadCloser) error {
 		if err != nil {
 			return fmt.Errorf("failed to decompress snapshot: %v", err)
 		}
-		fmt.Printf("FSM.Restore: Decompressed %d -> %d bytes\n", len(data), len(uncompressedData))
+		fmt.Printf("FSM.Restore: Decompressed %d -> %d bytes\n",
+			len(snapshotData), len(uncompressedData))
 	} else {
-		uncompressedData = data
+		uncompressedData = snapshotData
 		fmt.Printf("FSM.Restore: Using uncompressed data (%d bytes)\n", len(uncompressedData))
 	}
 

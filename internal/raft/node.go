@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -102,6 +103,14 @@ func NewNode(config *Config, store store.Store) (*Node, error) {
 		return nil, fmt.Errorf("failed to create snapshot store: %v", err)
 	}
 
+	if snapshots, err := snapshotStore.List(); err == nil {
+		fmt.Printf("Node %s: Found %d snapshots in store:\n", config.NodeID, len(snapshots))
+		for i, snap := range snapshots {
+			fmt.Printf("  Snapshot %d: ID: %s-%d, Index: %d, Term: %d\n",
+				i, snap.ID, snap.Index, snap.Index, snap.Term)
+		}
+	}
+
 	r, err := raft.NewRaft(raftConfig, fsm, boltDB, boltDB, snapshotStore, transport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create raft: %v", err)
@@ -131,7 +140,7 @@ func NewNode(config *Config, store store.Store) (*Node, error) {
 }
 
 func (n *Node) initCluster() error {
-	hasExistingState, err := n.hasExistingState()
+	hasExistingState, err := n.checkForExistingStateFiles()
 	if err != nil {
 		return fmt.Errorf("failed to check existing state: %v", err)
 	}
@@ -178,24 +187,41 @@ func (n *Node) initCluster() error {
 	}
 }
 
-func (n *Node) hasExistingState() (bool, error) {
-	stats := n.raft.Stats()
-	lastSnapshotIndex := stats["last_snapshot_index"]
+func (n *Node) checkForExistingStateFiles() (bool, error) {
+	snapshotsDir := filepath.Join(n.config.DataDir, "snapshots")
 
-	if lastSnapshotIndex != "" && lastSnapshotIndex != "0" {
-		fmt.Printf("Node %s: Existing state detected via snapshot index: %s\n",
-			n.config.NodeID, lastSnapshotIndex)
-		return true, nil
+	if entries, err := os.ReadDir(snapshotsDir); err == nil && len(entries) > 0 {
+		fmt.Printf("Node %s: Found %d snapshot files\n", n.config.NodeID, len(entries))
+
+		var latestSnapshot string
+		var latestIndex uint64 = 0
+
+		for _, entry := range entries {
+			if strings.HasSuffix(entry.Name(), ".snap") {
+				parts := strings.Split(entry.Name(), "-")
+				if len(parts) >= 1 {
+					if index, err := strconv.ParseUint(parts[0], 10, 64); err == nil {
+						if index > latestIndex {
+							latestIndex = index
+							latestSnapshot = entry.Name()
+						}
+					}
+				}
+			}
+		}
+
+		if latestSnapshot != "" {
+			fmt.Printf("Node %s: Latest snapshot: %s (index: %d)\n",
+				n.config.NodeID, latestSnapshot, latestIndex)
+			return true, nil
+		}
 	}
 
-	lastLogIndex := stats["last_log_index"]
-	if lastLogIndex != "" && lastLogIndex != "0" {
-		fmt.Printf("Node %s: Existing state detected via log index: %s\n",
-			n.config.NodeID, lastLogIndex)
+	logFile := filepath.Join(n.config.DataDir, "raft-log.bolt")
+	if _, err := os.Stat(logFile); err == nil {
+		fmt.Printf("Node %s: Found existing log file\n", n.config.NodeID)
 		return true, nil
 	}
-
-	fmt.Printf("Node %s: No existing state found\n", n.config.NodeID)
 
 	return false, nil
 }
