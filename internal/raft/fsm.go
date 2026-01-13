@@ -13,20 +13,17 @@ import (
 	"github.com/hashicorp/raft"
 )
 
-// FSM implements the raft.FSM interface
 type FSM struct {
 	store store.Store
 	mu    sync.Mutex
 }
 
-// NewFSM creates a new FSM
 func NewFSM(store store.Store) *FSM {
 	return &FSM{
 		store: store,
 	}
 }
 
-// Apply applies a Raft log entry to the FSM
 func (f *FSM) Apply(log *raft.Log) interface{} {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -61,29 +58,23 @@ func (f *FSM) Apply(log *raft.Log) interface{} {
 
 // TODO: Add snapshots implementation!!
 
-// Snapshot returns a snapshot of the FSM
 func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	// For now, return a simple snapshot
 	return &simpleSnapshot{}, nil
 }
 
-// Restore restores an FSM from a snapshot
 func (f *FSM) Restore(rc io.ReadCloser) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	// For now, we'll just close the reader
 	return rc.Close()
 }
 
-// simpleSnapshot is a basic snapshot implementation
 type simpleSnapshot struct{}
 
 func (s *simpleSnapshot) Persist(sink raft.SnapshotSink) error {
-	// Write empty snapshot for now
 	_, err := sink.Write([]byte("{}"))
 	if err != nil {
 		sink.Cancel()
@@ -93,5 +84,5 @@ func (s *simpleSnapshot) Persist(sink raft.SnapshotSink) error {
 }
 
 func (s *simpleSnapshot) Release() {
-	// No resources to release
+	return
 }

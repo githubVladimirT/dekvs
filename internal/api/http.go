@@ -18,18 +18,15 @@ func NewHTTPServer(node *raft.Node) *HTTPServer {
 }
 
 func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Set CORS headers for all responses
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	// Handle preflight OPTIONS request
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
-	// Route requests
 	switch {
 	case r.Method == types.OpGet && strings.HasPrefix(r.URL.Path, "/key/"):
 		h.GetHandler(w, r)
