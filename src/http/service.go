@@ -20,9 +20,9 @@ type Store interface {
 }
 
 type Service struct {
-	addr  string
-	ln    net.Listener
-	store Store
+	addr     string
+	listener net.Listener
+	store    Store
 }
 
 func New(addr string, store Store) *Service {
@@ -41,12 +41,12 @@ func (s *Service) Start() error {
 	if err != nil {
 		return err
 	}
-	s.ln = ln
+	s.listener = ln
 
 	http.Handle("/", s)
 
 	go func() {
-		err := server.Serve(s.ln)
+		err := server.Serve(s.listener)
 		if err != nil {
 			log.Fatalf("HTTP serve: %s", err)
 		}
@@ -56,7 +56,7 @@ func (s *Service) Start() error {
 }
 
 func (s *Service) Close() {
-	s.ln.Close()
+	s.listener.Close()
 }
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +161,7 @@ func (s *Service) handleKeyRequest(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		io.WriteString(w, string(b))
+		io.Writer.Write(w, b)
 
 	case "POST":
 		m := map[string]string{}
@@ -193,5 +193,5 @@ func (s *Service) handleKeyRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) Addr() net.Addr {
-	return s.ln.Addr()
+	return s.listener.Addr()
 }
