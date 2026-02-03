@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package dekvs;
+
+option go_package = "./proto";
+
+service DeKVS {
+    rpc Get(GetRequest) returns (GetResponse);
+    rpc Set(SetRequest) returns (SetResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
+    rpc Batch(BatchRequest) returns (BatchResponse);
+    rpc Join(JoinRequest) returns (JoinResponse);
+    rpc Stats(StatsRequest) returns (StatsResponse);
+};
+
+message GetRequest {
+    string key = 1;
+};
+
+message GetResponse {
+    bytes value = 1;
+    uint64 version = 2;
+    bool found = 3;
+};
+
+message SetRequest {
+    string key = 1;
+    bytes value = 2;
+    int64 ttl_seconds = 3;
+};
+
+message SetResponse {
+    uint64 version = 1;
+};
+
+message DeleteRequest {
+    string key = 1;
+};
+
+message DeleteResponse {
+    bool success = 1;
+};
+
+message BatchOperation {
+    oneof operation {
+        SetRequest set = 1;
+        string delete = 2;
+    }
+};
+
+message BatchRequest {
+    repeated BatchOperation operations = 1;
+};
+
+message BatchResponse {
+    repeated uint64 versions = 1;
+    repeated bool success = 2;
+};
+
+message JoinRequest {
+    string node_id = 1;
+    string address = 2;
+};
+
+message JoinResponse {
+    bool success = 1;
+};
+
+message StatsRequest {};
+
+message StatsResponse {
+    map<string, string> stats = 1;
+};
