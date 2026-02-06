@@ -446,7 +446,7 @@ func (x *BatchRequest) GetOperations() []*BatchOperation {
 type BatchResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Versions      []uint64               `protobuf:"varint,1,rep,packed,name=versions,proto3" json:"versions,omitempty"`
-	Success       []bool                 `protobuf:"varint,2,rep,packed,name=success,proto3" json:"success,omitempty"`
+	Successes     []bool                 `protobuf:"varint,2,rep,packed,name=successes,proto3" json:"successes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -488,9 +488,9 @@ func (x *BatchResponse) GetVersions() []uint64 {
 	return nil
 }
 
-func (x *BatchResponse) GetSuccess() []bool {
+func (x *BatchResponse) GetSuccesses() []bool {
 	if x != nil {
-		return x.Success
+		return x.Successes
 	}
 	return nil
 }
@@ -702,10 +702,10 @@ const file_proto_dekvs_proto_rawDesc = "" +
 	"\fBatchRequest\x125\n" +
 	"\n" +
 	"operations\x18\x01 \x03(\v2\x15.dekvs.BatchOperationR\n" +
-	"operations\"E\n" +
+	"operations\"I\n" +
 	"\rBatchResponse\x12\x1a\n" +
-	"\bversions\x18\x01 \x03(\x04R\bversions\x12\x18\n" +
-	"\asuccess\x18\x02 \x03(\bR\asuccess\"@\n" +
+	"\bversions\x18\x01 \x03(\x04R\bversions\x12\x1c\n" +
+	"\tsuccesses\x18\x02 \x03(\bR\tsuccesses\"@\n" +
 	"\vJoinRequest\x12\x17\n" +
 	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\"(\n" +

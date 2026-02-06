@@ -54,7 +54,7 @@ message BatchRequest {
 
 message BatchResponse {
     repeated uint64 versions = 1;
-    repeated bool success = 2;
+    repeated bool successes = 2;
 };
 
 message JoinRequest {
