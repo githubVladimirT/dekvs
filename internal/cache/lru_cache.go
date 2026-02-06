@@ -6,8 +6,8 @@ import (
 )
 
 type Cache interface {
-	Get(key string) (interface{}, bool)
-	Put(key string, value interface{})
+	Get(key string) (any, bool)
+	Put(key string, value any)
 	Delete(key string)
 	Clear()
 	Len() int
@@ -22,7 +22,7 @@ type LRUCache struct {
 
 type entry struct {
 	key   string
-	value interface{}
+	value any
 }
 
 func NewLRUCache(capacity int) *LRUCache {
@@ -33,7 +33,7 @@ func NewLRUCache(capacity int) *LRUCache {
 	}
 }
 
-func (c *LRUCache) Get(key string) (interface{}, bool) {
+func (c *LRUCache) Get(key string) (any, bool) {
 	c.mu.RLock()
 	defer c.mu.Unlock()
 
@@ -44,7 +44,7 @@ func (c *LRUCache) Get(key string) (interface{}, bool) {
 	return nil, false
 }
 
-func (c *LRUCache) Put(key string, value interface{}) {
+func (c *LRUCache) Put(key string, value any) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
