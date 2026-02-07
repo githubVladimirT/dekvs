@@ -37,7 +37,7 @@ func (f *FSM) Apply(log *raft.Log) any {
 	var cmd Command
 	var batch BatchCommand
 
-	if err := json.Unmarshal(log.Data, &batch); err == nil {
+	if err := json.Unmarshal(log.Data, &batch); err == nil && len(batch.Ops) > 0 {
 		results := make([]any, len(batch.Ops))
 
 		for i, op := range batch.Ops {
@@ -48,10 +48,10 @@ func (f *FSM) Apply(log *raft.Log) any {
 	}
 
 	if err := json.Unmarshal(log.Data, &cmd); err != nil {
-		return nil
+		return []any{nil}
 	}
 
-	return f.applyCommand(cmd)
+	return []any{f.applyCommand(cmd)}
 }
 
 func (f *FSM) applyCommand(cmd Command) any {

@@ -3,3 +3,7 @@
 /kv-cli
 /.vscode/
 /.cspell/
+/cmd/client/client
+/cmd/server/server
+/cmd/admin/admin
+/build/*

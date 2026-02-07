@@ -671,6 +671,258 @@ func (x *StatsResponse) GetStats() map[string]string {
 	return nil
 }
 
+type RemoveNodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeId        string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveNodeRequest) Reset() {
+	*x = RemoveNodeRequest{}
+	mi := &file_proto_dekvs_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveNodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveNodeRequest) ProtoMessage() {}
+
+func (x *RemoveNodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_dekvs_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveNodeRequest.ProtoReflect.Descriptor instead.
+func (*RemoveNodeRequest) Descriptor() ([]byte, []int) {
+	return file_proto_dekvs_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RemoveNodeRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+type RemoveNodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveNodeResponse) Reset() {
+	*x = RemoveNodeResponse{}
+	mi := &file_proto_dekvs_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveNodeResponse) ProtoMessage() {}
+
+func (x *RemoveNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_dekvs_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveNodeResponse.ProtoReflect.Descriptor instead.
+func (*RemoveNodeResponse) Descriptor() ([]byte, []int) {
+	return file_proto_dekvs_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *RemoveNodeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *RemoveNodeResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+type ClusterStateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClusterStateRequest) Reset() {
+	*x = ClusterStateRequest{}
+	mi := &file_proto_dekvs_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClusterStateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClusterStateRequest) ProtoMessage() {}
+
+func (x *ClusterStateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_dekvs_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClusterStateRequest.ProtoReflect.Descriptor instead.
+func (*ClusterStateRequest) Descriptor() ([]byte, []int) {
+	return file_proto_dekvs_proto_rawDescGZIP(), []int{15}
+}
+
+type ClusterStateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LeaderId      string                 `protobuf:"bytes,1,opt,name=leader_id,json=leaderId,proto3" json:"leader_id,omitempty"`
+	Nodes         []*NodeInfo            `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClusterStateResponse) Reset() {
+	*x = ClusterStateResponse{}
+	mi := &file_proto_dekvs_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClusterStateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClusterStateResponse) ProtoMessage() {}
+
+func (x *ClusterStateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_dekvs_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClusterStateResponse.ProtoReflect.Descriptor instead.
+func (*ClusterStateResponse) Descriptor() ([]byte, []int) {
+	return file_proto_dekvs_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ClusterStateResponse) GetLeaderId() string {
+	if x != nil {
+		return x.LeaderId
+	}
+	return ""
+}
+
+func (x *ClusterStateResponse) GetNodes() []*NodeInfo {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
+type NodeInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Address       string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Healthy       bool                   `protobuf:"varint,3,opt,name=healthy,proto3" json:"healthy,omitempty"`
+	State         string                 `protobuf:"bytes,4,opt,name=state,proto3" json:"state,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NodeInfo) Reset() {
+	*x = NodeInfo{}
+	mi := &file_proto_dekvs_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NodeInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeInfo) ProtoMessage() {}
+
+func (x *NodeInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_dekvs_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeInfo.ProtoReflect.Descriptor instead.
+func (*NodeInfo) Descriptor() ([]byte, []int) {
+	return file_proto_dekvs_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *NodeInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *NodeInfo) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *NodeInfo) GetHealthy() bool {
+	if x != nil {
+		return x.Healthy
+	}
+	return false
+}
+
+func (x *NodeInfo) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
 var File_proto_dekvs_proto protoreflect.FileDescriptor
 
 const file_proto_dekvs_proto_rawDesc = "" +
@@ -717,14 +969,31 @@ const file_proto_dekvs_proto_rawDesc = "" +
 	"\n" +
 	"StatsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xb3\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\",\n" +
+	"\x11RemoveNodeRequest\x12\x17\n" +
+	"\anode_id\x18\x01 \x01(\tR\x06nodeId\"D\n" +
+	"\x12RemoveNodeResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\x15\n" +
+	"\x13ClusterStateRequest\"Z\n" +
+	"\x14ClusterStateResponse\x12\x1b\n" +
+	"\tleader_id\x18\x01 \x01(\tR\bleaderId\x12%\n" +
+	"\x05nodes\x18\x02 \x03(\v2\x0f.dekvs.NodeInfoR\x05nodes\"d\n" +
+	"\bNodeInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x18\n" +
+	"\ahealthy\x18\x03 \x01(\bR\ahealthy\x12\x14\n" +
+	"\x05state\x18\x04 \x01(\tR\x05state2\xc2\x03\n" +
 	"\x05DeKVS\x12,\n" +
 	"\x03Get\x12\x11.dekvs.GetRequest\x1a\x12.dekvs.GetResponse\x12,\n" +
 	"\x03Set\x12\x11.dekvs.SetRequest\x1a\x12.dekvs.SetResponse\x125\n" +
 	"\x06Delete\x12\x14.dekvs.DeleteRequest\x1a\x15.dekvs.DeleteResponse\x122\n" +
 	"\x05Batch\x12\x13.dekvs.BatchRequest\x1a\x14.dekvs.BatchResponse\x12/\n" +
 	"\x04Join\x12\x12.dekvs.JoinRequest\x1a\x13.dekvs.JoinResponse\x122\n" +
-	"\x05Stats\x12\x13.dekvs.StatsRequest\x1a\x14.dekvs.StatsResponseB\tZ\a./protob\x06proto3"
+	"\x05Stats\x12\x13.dekvs.StatsRequest\x1a\x14.dekvs.StatsResponse\x12A\n" +
+	"\n" +
+	"RemoveNode\x12\x18.dekvs.RemoveNodeRequest\x1a\x19.dekvs.RemoveNodeResponse\x12J\n" +
+	"\x0fGetClusterState\x12\x1a.dekvs.ClusterStateRequest\x1a\x1b.dekvs.ClusterStateResponseB\tZ\a./protob\x06proto3"
 
 var (
 	file_proto_dekvs_proto_rawDescOnce sync.Once
@@ -738,44 +1007,54 @@ func file_proto_dekvs_proto_rawDescGZIP() []byte {
 	return file_proto_dekvs_proto_rawDescData
 }
 
-var file_proto_dekvs_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_proto_dekvs_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_proto_dekvs_proto_goTypes = []any{
-	(*GetRequest)(nil),     // 0: dekvs.GetRequest
-	(*GetResponse)(nil),    // 1: dekvs.GetResponse
-	(*SetRequest)(nil),     // 2: dekvs.SetRequest
-	(*SetResponse)(nil),    // 3: dekvs.SetResponse
-	(*DeleteRequest)(nil),  // 4: dekvs.DeleteRequest
-	(*DeleteResponse)(nil), // 5: dekvs.DeleteResponse
-	(*BatchOperation)(nil), // 6: dekvs.BatchOperation
-	(*BatchRequest)(nil),   // 7: dekvs.BatchRequest
-	(*BatchResponse)(nil),  // 8: dekvs.BatchResponse
-	(*JoinRequest)(nil),    // 9: dekvs.JoinRequest
-	(*JoinResponse)(nil),   // 10: dekvs.JoinResponse
-	(*StatsRequest)(nil),   // 11: dekvs.StatsRequest
-	(*StatsResponse)(nil),  // 12: dekvs.StatsResponse
-	nil,                    // 13: dekvs.StatsResponse.StatsEntry
+	(*GetRequest)(nil),           // 0: dekvs.GetRequest
+	(*GetResponse)(nil),          // 1: dekvs.GetResponse
+	(*SetRequest)(nil),           // 2: dekvs.SetRequest
+	(*SetResponse)(nil),          // 3: dekvs.SetResponse
+	(*DeleteRequest)(nil),        // 4: dekvs.DeleteRequest
+	(*DeleteResponse)(nil),       // 5: dekvs.DeleteResponse
+	(*BatchOperation)(nil),       // 6: dekvs.BatchOperation
+	(*BatchRequest)(nil),         // 7: dekvs.BatchRequest
+	(*BatchResponse)(nil),        // 8: dekvs.BatchResponse
+	(*JoinRequest)(nil),          // 9: dekvs.JoinRequest
+	(*JoinResponse)(nil),         // 10: dekvs.JoinResponse
+	(*StatsRequest)(nil),         // 11: dekvs.StatsRequest
+	(*StatsResponse)(nil),        // 12: dekvs.StatsResponse
+	(*RemoveNodeRequest)(nil),    // 13: dekvs.RemoveNodeRequest
+	(*RemoveNodeResponse)(nil),   // 14: dekvs.RemoveNodeResponse
+	(*ClusterStateRequest)(nil),  // 15: dekvs.ClusterStateRequest
+	(*ClusterStateResponse)(nil), // 16: dekvs.ClusterStateResponse
+	(*NodeInfo)(nil),             // 17: dekvs.NodeInfo
+	nil,                          // 18: dekvs.StatsResponse.StatsEntry
 }
 var file_proto_dekvs_proto_depIdxs = []int32{
 	2,  // 0: dekvs.BatchOperation.set:type_name -> dekvs.SetRequest
 	6,  // 1: dekvs.BatchRequest.operations:type_name -> dekvs.BatchOperation
-	13, // 2: dekvs.StatsResponse.stats:type_name -> dekvs.StatsResponse.StatsEntry
-	0,  // 3: dekvs.DeKVS.Get:input_type -> dekvs.GetRequest
-	2,  // 4: dekvs.DeKVS.Set:input_type -> dekvs.SetRequest
-	4,  // 5: dekvs.DeKVS.Delete:input_type -> dekvs.DeleteRequest
-	7,  // 6: dekvs.DeKVS.Batch:input_type -> dekvs.BatchRequest
-	9,  // 7: dekvs.DeKVS.Join:input_type -> dekvs.JoinRequest
-	11, // 8: dekvs.DeKVS.Stats:input_type -> dekvs.StatsRequest
-	1,  // 9: dekvs.DeKVS.Get:output_type -> dekvs.GetResponse
-	3,  // 10: dekvs.DeKVS.Set:output_type -> dekvs.SetResponse
-	5,  // 11: dekvs.DeKVS.Delete:output_type -> dekvs.DeleteResponse
-	8,  // 12: dekvs.DeKVS.Batch:output_type -> dekvs.BatchResponse
-	10, // 13: dekvs.DeKVS.Join:output_type -> dekvs.JoinResponse
-	12, // 14: dekvs.DeKVS.Stats:output_type -> dekvs.StatsResponse
-	9,  // [9:15] is the sub-list for method output_type
-	3,  // [3:9] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	18, // 2: dekvs.StatsResponse.stats:type_name -> dekvs.StatsResponse.StatsEntry
+	17, // 3: dekvs.ClusterStateResponse.nodes:type_name -> dekvs.NodeInfo
+	0,  // 4: dekvs.DeKVS.Get:input_type -> dekvs.GetRequest
+	2,  // 5: dekvs.DeKVS.Set:input_type -> dekvs.SetRequest
+	4,  // 6: dekvs.DeKVS.Delete:input_type -> dekvs.DeleteRequest
+	7,  // 7: dekvs.DeKVS.Batch:input_type -> dekvs.BatchRequest
+	9,  // 8: dekvs.DeKVS.Join:input_type -> dekvs.JoinRequest
+	11, // 9: dekvs.DeKVS.Stats:input_type -> dekvs.StatsRequest
+	13, // 10: dekvs.DeKVS.RemoveNode:input_type -> dekvs.RemoveNodeRequest
+	15, // 11: dekvs.DeKVS.GetClusterState:input_type -> dekvs.ClusterStateRequest
+	1,  // 12: dekvs.DeKVS.Get:output_type -> dekvs.GetResponse
+	3,  // 13: dekvs.DeKVS.Set:output_type -> dekvs.SetResponse
+	5,  // 14: dekvs.DeKVS.Delete:output_type -> dekvs.DeleteResponse
+	8,  // 15: dekvs.DeKVS.Batch:output_type -> dekvs.BatchResponse
+	10, // 16: dekvs.DeKVS.Join:output_type -> dekvs.JoinResponse
+	12, // 17: dekvs.DeKVS.Stats:output_type -> dekvs.StatsResponse
+	14, // 18: dekvs.DeKVS.RemoveNode:output_type -> dekvs.RemoveNodeResponse
+	16, // 19: dekvs.DeKVS.GetClusterState:output_type -> dekvs.ClusterStateResponse
+	12, // [12:20] is the sub-list for method output_type
+	4,  // [4:12] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_dekvs_proto_init() }
@@ -793,7 +1072,7 @@ func file_proto_dekvs_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_dekvs_proto_rawDesc), len(file_proto_dekvs_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,0 +1,21 @@
+2026/02/07 19:03:37 Rollback failed: tx closed
+2026/02/07 19:03:37 Rollback failed: tx closed
+2026/02/07 19:03:37 Rollback failed: tx closed
+2026-02-07T19:03:37.784+0300 [INFO]  raft: initial configuration: index=0 servers=[]
+2026/02/07 19:03:37 Attempting to join cluster via 127.0.0.1:13001
+2026-02-07T19:03:37.784+0300 [INFO]  raft: entering follower state: follower="Node at 127.0.0.1:12003 [Follower]" leader-address= leader-id=
+2026/02/07 19:03:37 Rollback failed: tx closed
+2026-02-07T19:03:37.788+0300 [WARN]  raft: failed to get previous log: previous-index=4 last-index=0 error="log not found"
+2026/02/07 19:03:37 Successfully joined cluster
+2026/02/07 19:03:37 Server starting: node=node3 raft=127.0.0.1:12003 grpc=127.0.0.1:13003
+2026/02/07 19:03:37 Rollback failed: tx closed
+2026-02-07T19:03:49.979+0300 [WARN]  raft: heartbeat timeout reached, starting election: last-leader-addr=127.0.0.1:12001 last-leader-id=node1
+2026-02-07T19:03:49.979+0300 [INFO]  raft: entering candidate state: node="Node at 127.0.0.1:12003 [Candidate]" term=3
+2026-02-07T19:03:49.980+0300 [ERROR] raft: failed to make requestVote RPC: target="{Voter node1 127.0.0.1:12001}" error="dial tcp 127.0.0.1:12001: connect: connection refused" term=3
+2026-02-07T19:03:49.981+0300 [INFO]  raft: pre-vote campaign failed, waiting for election timeout: term=2 tally=1 refused=2 votesNeeded=2
+2026/02/07 19:03:50 Rollback failed: tx closed
+2026/02/07 19:03:50 Rollback failed: tx closed
+2026/02/07 19:03:50 Rollback failed: tx closed
+2026-02-07T19:03:50.014+0300 [INFO]  raft: entering follower state: follower="Node at 127.0.0.1:12003 [Follower]" leader-address= leader-id=
+2026/02/07 19:03:50 Rollback failed: tx closed
+2026/02/07 19:05:23 Shutting down gracefully...

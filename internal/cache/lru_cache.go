@@ -35,7 +35,7 @@ func NewLRUCache(capacity int) *LRUCache {
 
 func (c *LRUCache) Get(key string) (any, bool) {
 	c.mu.RLock()
-	defer c.mu.Unlock()
+	defer c.mu.RUnlock()
 
 	if el, ok := c.cache[key]; ok {
 		c.list.MoveToFront(el)

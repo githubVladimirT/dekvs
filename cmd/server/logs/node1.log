@@ -1,0 +1,29 @@
+2026/02/07 19:03:32 Rollback failed: tx closed
+2026/02/07 19:03:32 Rollback failed: tx closed
+2026/02/07 19:03:32 Rollback failed: tx closed
+2026-02-07T19:03:32.780+0300 [INFO]  raft: initial configuration: index=0 servers=[]
+2026-02-07T19:03:32.780+0300 [INFO]  raft: entering follower state: follower="Node at 127.0.0.1:12001 [Follower]" leader-address= leader-id=
+2026/02/07 19:03:32 New cluster bootstrapped
+2026/02/07 19:03:32 Server starting: node=node1 raft=127.0.0.1:12001 grpc=127.0.0.1:13001
+2026/02/07 19:03:32 Rollback failed: tx closed
+2026/02/07 19:03:32 Rollback failed: tx closed
+2026/02/07 19:03:32 Rollback failed: tx closed
+2026-02-07T19:03:33.701+0300 [WARN]  raft: heartbeat timeout reached, starting election: last-leader-addr= last-leader-id=
+2026-02-07T19:03:33.701+0300 [INFO]  raft: entering candidate state: node="Node at 127.0.0.1:12001 [Candidate]" term=2
+2026-02-07T19:03:33.701+0300 [INFO]  raft: pre-vote successful, starting election: term=2 tally=1 refused=0 votesNeeded=1
+2026/02/07 19:03:33 Rollback failed: tx closed
+2026/02/07 19:03:33 Rollback failed: tx closed
+2026/02/07 19:03:33 Rollback failed: tx closed
+2026-02-07T19:03:33.704+0300 [INFO]  raft: election won: term=2 tally=1
+2026-02-07T19:03:33.704+0300 [INFO]  raft: entering leader state: leader="Node at 127.0.0.1:12001 [Leader]"
+2026/02/07 19:03:33 Rollback failed: tx closed
+2026-02-07T19:03:35.784+0300 [INFO]  raft: updating configuration: command=AddVoter server-id=node2 server-addr=127.0.0.1:12002 servers="[{Suffrage:Voter ID:node1 Address:127.0.0.1:12001} {Suffrage:Voter ID:node2 Address:127.0.0.1:12002}]"
+2026/02/07 19:03:35 Rollback failed: tx closed
+2026-02-07T19:03:35.785+0300 [INFO]  raft: added peer, starting replication: peer=node2
+2026-02-07T19:03:35.786+0300 [WARN]  raft: appendEntries rejected, sending older logs: peer="{Voter node2 127.0.0.1:12002}" next=1
+2026-02-07T19:03:35.788+0300 [INFO]  raft: pipelining replication: peer="{Voter node2 127.0.0.1:12002}"
+2026-02-07T19:03:37.786+0300 [INFO]  raft: updating configuration: command=AddVoter server-id=node3 server-addr=127.0.0.1:12003 servers="[{Suffrage:Voter ID:node1 Address:127.0.0.1:12001} {Suffrage:Voter ID:node2 Address:127.0.0.1:12002} {Suffrage:Voter ID:node3 Address:127.0.0.1:12003}]"
+2026/02/07 19:03:37 Rollback failed: tx closed
+2026-02-07T19:03:37.787+0300 [INFO]  raft: added peer, starting replication: peer=node3
+2026-02-07T19:03:37.788+0300 [WARN]  raft: appendEntries rejected, sending older logs: peer="{Voter node3 127.0.0.1:12003}" next=1
+2026-02-07T19:03:37.791+0300 [INFO]  raft: pipelining replication: peer="{Voter node3 127.0.0.1:12003}"

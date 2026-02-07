@@ -5,69 +5,94 @@ package dekvs;
 option go_package = "./proto";
 
 service DeKVS {
-    rpc Get(GetRequest) returns (GetResponse);
-    rpc Set(SetRequest) returns (SetResponse);
-    rpc Delete(DeleteRequest) returns (DeleteResponse);
-    rpc Batch(BatchRequest) returns (BatchResponse);
-    rpc Join(JoinRequest) returns (JoinResponse);
-    rpc Stats(StatsRequest) returns (StatsResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+  rpc Batch(BatchRequest) returns (BatchResponse);
+  rpc Join(JoinRequest) returns (JoinResponse);
+  rpc Stats(StatsRequest) returns (StatsResponse);
+  rpc RemoveNode(RemoveNodeRequest) returns (RemoveNodeResponse);
+  rpc GetClusterState(ClusterStateRequest) returns (ClusterStateResponse);
 };
 
 message GetRequest {
-    string key = 1;
+  string key = 1;
 };
 
 message GetResponse {
-    bytes value = 1;
-    uint64 version = 2;
-    bool found = 3;
+  bytes  value   = 1;
+  uint64 version = 2;
+  bool   found   = 3;
 };
 
 message SetRequest {
-    string key = 1;
-    bytes value = 2;
-    int64 ttl_seconds = 3;
+  string key         = 1;
+  bytes  value       = 2;
+  int64  ttl_seconds = 3;
 };
 
 message SetResponse {
-    uint64 version = 1;
+  uint64 version = 1;
 };
 
 message DeleteRequest {
-    string key = 1;
+  string key = 1;
 };
 
 message DeleteResponse {
-    bool success = 1;
+  bool success = 1;
 };
 
 message BatchOperation {
-    oneof operation {
-        SetRequest set = 1;
-        string delete = 2;
-    }
+  oneof operation {
+    SetRequest set    = 1;
+    string     delete = 2;
+  }
 };
 
 message BatchRequest {
-    repeated BatchOperation operations = 1;
+  repeated BatchOperation operations = 1;
 };
 
 message BatchResponse {
-    repeated uint64 versions = 1;
-    repeated bool successes = 2;
+  repeated uint64 versions  = 1;
+  repeated bool   successes = 2;
 };
 
 message JoinRequest {
-    string node_id = 1;
-    string address = 2;
+  string node_id = 1;
+  string address = 2;
 };
 
 message JoinResponse {
-    bool success = 1;
+  bool success = 1;
 };
 
 message StatsRequest {};
 
 message StatsResponse {
-    map<string, string> stats = 1;
+  map<string, string> stats = 1;
 };
+
+message RemoveNodeRequest {
+  string node_id = 1;
+}
+
+message RemoveNodeResponse {
+  bool   success = 1;
+  string error   = 2;
+}
+
+message ClusterStateRequest {}
+
+message ClusterStateResponse {
+  string            leader_id = 1;
+  repeated NodeInfo nodes     = 2;
+}
+
+message NodeInfo {
+  string id      = 1;
+  string address = 2;
+  bool   healthy = 3;
+  string state   = 4;
+}

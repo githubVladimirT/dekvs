@@ -19,12 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DeKVS_Get_FullMethodName    = "/dekvs.DeKVS/Get"
-	DeKVS_Set_FullMethodName    = "/dekvs.DeKVS/Set"
-	DeKVS_Delete_FullMethodName = "/dekvs.DeKVS/Delete"
-	DeKVS_Batch_FullMethodName  = "/dekvs.DeKVS/Batch"
-	DeKVS_Join_FullMethodName   = "/dekvs.DeKVS/Join"
-	DeKVS_Stats_FullMethodName  = "/dekvs.DeKVS/Stats"
+	DeKVS_Get_FullMethodName             = "/dekvs.DeKVS/Get"
+	DeKVS_Set_FullMethodName             = "/dekvs.DeKVS/Set"
+	DeKVS_Delete_FullMethodName          = "/dekvs.DeKVS/Delete"
+	DeKVS_Batch_FullMethodName           = "/dekvs.DeKVS/Batch"
+	DeKVS_Join_FullMethodName            = "/dekvs.DeKVS/Join"
+	DeKVS_Stats_FullMethodName           = "/dekvs.DeKVS/Stats"
+	DeKVS_RemoveNode_FullMethodName      = "/dekvs.DeKVS/RemoveNode"
+	DeKVS_GetClusterState_FullMethodName = "/dekvs.DeKVS/GetClusterState"
 )
 
 // DeKVSClient is the client API for DeKVS service.
@@ -37,6 +39,8 @@ type DeKVSClient interface {
 	Batch(ctx context.Context, in *BatchRequest, opts ...grpc.CallOption) (*BatchResponse, error)
 	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error)
 	Stats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsResponse, error)
+	RemoveNode(ctx context.Context, in *RemoveNodeRequest, opts ...grpc.CallOption) (*RemoveNodeResponse, error)
+	GetClusterState(ctx context.Context, in *ClusterStateRequest, opts ...grpc.CallOption) (*ClusterStateResponse, error)
 }
 
 type deKVSClient struct {
@@ -107,6 +111,26 @@ func (c *deKVSClient) Stats(ctx context.Context, in *StatsRequest, opts ...grpc.
 	return out, nil
 }
 
+func (c *deKVSClient) RemoveNode(ctx context.Context, in *RemoveNodeRequest, opts ...grpc.CallOption) (*RemoveNodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveNodeResponse)
+	err := c.cc.Invoke(ctx, DeKVS_RemoveNode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deKVSClient) GetClusterState(ctx context.Context, in *ClusterStateRequest, opts ...grpc.CallOption) (*ClusterStateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ClusterStateResponse)
+	err := c.cc.Invoke(ctx, DeKVS_GetClusterState_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeKVSServer is the server API for DeKVS service.
 // All implementations must embed UnimplementedDeKVSServer
 // for forward compatibility.
@@ -117,6 +141,8 @@ type DeKVSServer interface {
 	Batch(context.Context, *BatchRequest) (*BatchResponse, error)
 	Join(context.Context, *JoinRequest) (*JoinResponse, error)
 	Stats(context.Context, *StatsRequest) (*StatsResponse, error)
+	RemoveNode(context.Context, *RemoveNodeRequest) (*RemoveNodeResponse, error)
+	GetClusterState(context.Context, *ClusterStateRequest) (*ClusterStateResponse, error)
 	mustEmbedUnimplementedDeKVSServer()
 }
 
@@ -144,6 +170,12 @@ func (UnimplementedDeKVSServer) Join(context.Context, *JoinRequest) (*JoinRespon
 }
 func (UnimplementedDeKVSServer) Stats(context.Context, *StatsRequest) (*StatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stats not implemented")
+}
+func (UnimplementedDeKVSServer) RemoveNode(context.Context, *RemoveNodeRequest) (*RemoveNodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveNode not implemented")
+}
+func (UnimplementedDeKVSServer) GetClusterState(context.Context, *ClusterStateRequest) (*ClusterStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetClusterState not implemented")
 }
 func (UnimplementedDeKVSServer) mustEmbedUnimplementedDeKVSServer() {}
 func (UnimplementedDeKVSServer) testEmbeddedByValue()               {}
@@ -274,6 +306,42 @@ func _DeKVS_Stats_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeKVS_RemoveNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeKVSServer).RemoveNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeKVS_RemoveNode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeKVSServer).RemoveNode(ctx, req.(*RemoveNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeKVS_GetClusterState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClusterStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeKVSServer).GetClusterState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeKVS_GetClusterState_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeKVSServer).GetClusterState(ctx, req.(*ClusterStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DeKVS_ServiceDesc is the grpc.ServiceDesc for DeKVS service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +372,14 @@ var DeKVS_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Stats",
 			Handler:    _DeKVS_Stats_Handler,
+		},
+		{
+			MethodName: "RemoveNode",
+			Handler:    _DeKVS_RemoveNode_Handler,
+		},
+		{
+			MethodName: "GetClusterState",
+			Handler:    _DeKVS_GetClusterState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
