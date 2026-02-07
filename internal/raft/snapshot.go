@@ -2,7 +2,7 @@ package raft
 
 import (
 	"encoding/json"
-	"io"
+	// "io"
 
 	"github.com/githubVladimirT/dekvs/internal/store"
 	"github.com/hashicorp/raft"

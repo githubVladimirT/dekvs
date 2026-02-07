@@ -7,33 +7,35 @@ import (
 
 	"github.com/githubVladimirT/dekvs/internal/store"
 	"github.com/hashicorp/raft"
-	"golang.org/x/tools/go/analysis/passes/nilfunc"
 )
 
-type command struct {
+type Command struct {
 	Op    string `json:"op"`
 	Key   string `json:"key"`
 	Value []byte `json:"value"`
 	TTL   int64  `json:"ttl"`
 }
 
-type batchCommand struct {
-	Ops []command `json:"ops"`
+type BatchCommand struct {
+	Ops []Command `json:"ops"`
 }
 
 type FSM struct {
-	store *store.Store
+	store   *store.Store
+	manager FSMManager
 }
 
 func NewFSM(cacheSize int) *FSM {
-	return &FSM{
+	fsm := &FSM{
 		store: store.NewStore(cacheSize),
 	}
+	fsm.manager = fsm
+	return fsm
 }
 
 func (f *FSM) Apply(log *raft.Log) any {
-	var cmd command
-	var batch batchCommand
+	var cmd Command
+	var batch BatchCommand
 
 	if err := json.Unmarshal(log.Data, &batch); err == nil {
 		results := make([]any, len(batch.Ops))
@@ -52,7 +54,7 @@ func (f *FSM) Apply(log *raft.Log) any {
 	return f.applyCommand(cmd)
 }
 
-func (f *FSM) applyCommand(cmd command) any {
+func (f *FSM) applyCommand(cmd Command) any {
 	switch cmd.Op {
 	case "set":
 		var ttl time.Duration
@@ -72,7 +74,10 @@ func (f *FSM) applyCommand(cmd command) any {
 }
 
 func (f *FSM) Snapshot() (raft.FSMSnapshot, error) {
-	return &snapshot{store: f.store}, nil
+	return &snapshot{
+		Data:    f.store.Snapshot(),
+		Version: f.store.GetVersion(),
+	}, nil
 }
 
 func (f *FSM) Restore(rc io.ReadCloser) error {

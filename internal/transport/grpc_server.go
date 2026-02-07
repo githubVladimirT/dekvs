@@ -3,26 +3,28 @@ package transport
 import (
 	"context"
 	"encoding/json"
+
 	//"log"
 	"time"
 
 	"github.com/hashicorp/raft"
 	"github.com/prometheus/client_golang/prometheus"
+
 	//"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	_ "github.com/githubVladimirT/dekvs/internal/raft"
+	dekvsraft "github.com/githubVladimirT/dekvs/internal/raft"
 	pb "github.com/githubVladimirT/dekvs/proto"
 )
 
 type Server struct {
 	pb.UnimplementedDeKVSServer
 	raftNode *raft.Raft
-	fsm      *raft.FSM
+	fsm      dekvsraft.FSMManager
 }
 
-func NewServer(raftNode *raft.Raft, fsm *raft.FSM) *Server {
+func NewServer(raftNode *raft.Raft, fsm dekvsraft.FSMManager) *Server {
 	return &Server{
 		raftNode: raftNode,
 		fsm:      fsm,
@@ -57,7 +59,7 @@ func (s *Server) Set(ctx context.Context, req *pb.SetRequest) (*pb.SetResponse, 
 		return nil, status.Error(codes.FailedPrecondition, "not the leader")
 	}
 
-	cmd := command{
+	cmd := dekvsraft.Command{
 		Op:    "set",
 		Key:   req.Key,
 		Value: req.Value,
@@ -89,27 +91,27 @@ func (s *Server) Batch(ctx context.Context, req *pb.BatchRequest) (*pb.BatchResp
 		return nil, status.Error(codes.FailedPrecondition, "not the leader")
 	}
 
-	var ops []command
+	var ops []dekvsraft.Command
 	var versions []uint64
 	var successes []bool
 
 	for _, op := range req.Operations {
 		if set := op.GetSet(); set != nil {
-			ops = append(ops, command{
+			ops = append(ops, dekvsraft.Command{
 				Op:    "set",
 				Key:   set.Key,
 				Value: set.Value,
 				TTL:   set.TtlSeconds,
 			})
 		} else if key := op.GetDelete(); key != "" {
-			ops = append(ops, command{
+			ops = append(ops, dekvsraft.Command{
 				Op:  "delete",
 				Key: key,
 			})
 		}
 	}
 
-	batchCmd := batchCommand{Ops: ops}
+	batchCmd := dekvsraft.BatchCommand{Ops: ops}
 	data, err := json.Marshal(batchCmd)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

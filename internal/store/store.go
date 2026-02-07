@@ -3,6 +3,8 @@ package store
 import (
 	"sync"
 	"time"
+
+	"github.com/githubVladimirT/dekvs/internal/cache"
 )
 
 type VersionedValue struct {
@@ -17,20 +19,20 @@ type Store struct {
 	data     map[string]*VersionedValue
 	versions map[string][]uint64
 	version  uint64
-	cache    Cache
+	cache    cache.Cache
 }
 
 func NewStore(cacheSize int) *Store {
 	return &Store{
 		data:     make(map[string]*VersionedValue),
 		versions: make(map[string][]uint64),
-		cache:    NewLRUCache(cacheSize),
+		cache:    cache.NewLRUCache(cacheSize),
 	}
 }
 
 func (st *Store) Get(key string) (*VersionedValue, bool) {
 	if cached, ok := st.cache.Get(key); ok {
-		return cached.(*VersionValue), true
+		return cached.(*VersionedValue), true
 	}
 
 	st.mu.RLock()
@@ -159,4 +161,10 @@ func (s *Store) Restore(snapshot map[string]*VersionedValue, version uint64) {
 	for key, val := range snapshot {
 		s.versions[key] = []uint64{val.Version}
 	}
+}
+
+func (s *Store) GetVersion() uint64 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.version
 }
