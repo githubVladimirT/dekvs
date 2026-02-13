@@ -13,11 +13,13 @@ import (
 	"github.com/hashicorp/raft"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
 	nodeID = flag.String("id", "node1", "Node ID")
 	addr   = flag.String("addr", "127.0.0.1:8081", "Node address")
+	grpcPort   = flag.String("grpc", "9091", "gRPC port")
 	join   = flag.Bool("join", false, "Join existing cluster")
 )
 
@@ -55,7 +57,7 @@ func (s *server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 func main() {
 	flag.Parse()
 
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":" + *grpcPort)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -77,6 +79,7 @@ func main() {
 	}
 
 	pb.RegisterKVServiceServer(s, grpcServer)
+	reflection.Register(s)
 
 	log.Printf("Server %s running at %s", *nodeID, *addr)
 	if err := s.Serve(lis); err != nil {
