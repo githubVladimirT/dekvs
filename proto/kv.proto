@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package kv;
+
+option go_package = "./proto;proto";
+
+service KVService {
+    rpc Put(PutRequest) returns (PutResponse);
+    rpc Get(GetRequest) returns (GetResponse);
+
+    // Управление кластером
+    rpc AddPeer(AddPeerRequest) returns (AddPeerResponse);
+    rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse);
+    rpc ClusterState(ClusterStateRequest) returns (ClusterStateResponse);
+}
+
+message PutRequest {
+    string key = 1;
+    bytes value = 2;
+}
+
+message PutResponse {
+    bool success = 1;
+}
+
+message GetRequest {
+    string key = 1;
+}
+
+message GetResponse {
+    bytes value = 1;
+    bool found = 2;
+}
+
+message AddPeerRequest {
+    string id = 1;
+    string addr = 2;
+}
+
+message AddPeerResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message RemovePeerRequest {
+    string id = 1;
+}
+
+message RemovePeerResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message ClusterStateRequest {}
+
+message ClusterStateResponse {
+    string leader = 1;
+    repeated Peer peers = 2;
+}
+
+message Peer {
+    string id = 1;
+    string addr = 2;
+    bool is_leader = 3;
+}
