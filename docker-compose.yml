@@ -1,56 +1,56 @@
-version: '3.8'
+# version: '3.8'
 
-services:
-  node1:
-    build: .
-    container_name: dekvs-node1
-    environment:
-      - NODE_ID=node1
-      - RAFT_ADDR=node1:12001
-      - GRPC_ADDR=node1:13001
-      - JOIN_ADDR=
-    ports:
-      - "13001:13001"
-      - "12001:12001"
-      - "9091:9090"
-    volumes:
-      - node1-data:/data
+# services:
+#   node1:
+#     build: .
+#     container_name: dekvs-node1
+#     environment:
+#       - NODE_ID=node1
+#       - RAFT_ADDR=node1:12001
+#       - GRPC_ADDR=node1:13001
+#       - JOIN_ADDR=
+#     ports:
+#       - "13001:13001"
+#       - "12001:12001"
+#       - "9091:9090"
+#     volumes:
+#       - node1-data:/data
 
-  node2:
-    build: .
-    container_name: dekvs-node2
-    environment:
-      - NODE_ID=node2
-      - RAFT_ADDR=node2:12002
-      - GRPC_ADDR=node2:13002
-      - JOIN_ADDR=node1:13001
-    ports:
-      - "13002:13002"
-      - "12002:12002"
-      - "9092:9090"
-    volumes:
-      - node2-data:/data
-    depends_on:
-      - node1
+#   node2:
+#     build: .
+#     container_name: dekvs-node2
+#     environment:
+#       - NODE_ID=node2
+#       - RAFT_ADDR=node2:12002
+#       - GRPC_ADDR=node2:13002
+#       - JOIN_ADDR=node1:13001
+#     ports:
+#       - "13002:13002"
+#       - "12002:12002"
+#       - "9092:9090"
+#     volumes:
+#       - node2-data:/data
+#     depends_on:
+#       - node1
 
-  node3:
-    build: .
-    container_name: dekvs-node3
-    environment:
-      - NODE_ID=node3
-      - RAFT_ADDR=node3:12003
-      - GRPC_ADDR=node3:13003
-      - JOIN_ADDR=node1:13001
-    ports:
-      - "13003:13003"
-      - "12003:12003"
-      - "9093:9090"
-    volumes:
-      - node3-data:/data
-    depends_on:
-      - node1
+#   node3:
+#     build: .
+#     container_name: dekvs-node3
+#     environment:
+#       - NODE_ID=node3
+#       - RAFT_ADDR=node3:12003
+#       - GRPC_ADDR=node3:13003
+#       - JOIN_ADDR=node1:13001
+#     ports:
+#       - "13003:13003"
+#       - "12003:12003"
+#       - "9093:9090"
+#     volumes:
+#       - node3-data:/data
+#     depends_on:
+#       - node1
 
-volumes:
-  node1-data:
-  node2-data:
-  node3-data:
+# volumes:
+#   node1-data:
+#   node2-data:
+#   node3-data:
