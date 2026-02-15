@@ -1,7 +1,7 @@
-scrape_configs:
-  - job_name: 'dekvs-cluster'
-    static_configs:
-      - targets:
-        - 'localhost:9091'
-        - 'localhost:9092'
-        - 'localhost:9093'
+# scrape_configs:
+#   - job_name: 'dekvs-cluster'
+#     static_configs:
+#       - targets:
+#         - 'localhost:9091'
+#         - 'localhost:9092'
+#         - 'localhost:9093'
