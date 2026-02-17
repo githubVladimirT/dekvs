@@ -17,10 +17,10 @@ import (
 )
 
 var (
-	nodeID = flag.String("id", "node1", "Node ID")
-	addr   = flag.String("addr", "127.0.0.1:8081", "Node address")
-	grpcPort   = flag.String("grpc", "9091", "gRPC port")
-	join   = flag.Bool("join", false, "Join existing cluster")
+	nodeID   = flag.String("id", "node1", "Node ID")
+	addr     = flag.String("addr", "127.0.0.1:9091", "Node address")
+	grpcPort = flag.String("grpc-port", "8081", "gRPC port")
+	join     = flag.Bool("join", false, "Join existing cluster")
 )
 
 type server struct {
@@ -57,7 +57,7 @@ func (s *server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 func main() {
 	flag.Parse()
 
-	lis, err := net.Listen("tcp", ":" + *grpcPort)
+	lis, err := net.Listen("tcp", ":"+*grpcPort)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
