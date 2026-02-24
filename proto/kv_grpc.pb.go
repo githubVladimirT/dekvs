@@ -24,6 +24,7 @@ const (
 	KVService_AddPeer_FullMethodName      = "/kv.KVService/AddPeer"
 	KVService_RemovePeer_FullMethodName   = "/kv.KVService/RemovePeer"
 	KVService_ClusterState_FullMethodName = "/kv.KVService/ClusterState"
+	KVService_Ping_FullMethodName         = "/kv.KVService/Ping"
 )
 
 // KVServiceClient is the client API for KVService service.
@@ -36,6 +37,7 @@ type KVServiceClient interface {
 	AddPeer(ctx context.Context, in *AddPeerRequest, opts ...grpc.CallOption) (*AddPeerResponse, error)
 	RemovePeer(ctx context.Context, in *RemovePeerRequest, opts ...grpc.CallOption) (*RemovePeerResponse, error)
 	ClusterState(ctx context.Context, in *ClusterStateRequest, opts ...grpc.CallOption) (*ClusterStateResponse, error)
+	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
 type kVServiceClient struct {
@@ -96,6 +98,16 @@ func (c *kVServiceClient) ClusterState(ctx context.Context, in *ClusterStateRequ
 	return out, nil
 }
 
+func (c *kVServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, KVService_Ping_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KVServiceServer is the server API for KVService service.
 // All implementations must embed UnimplementedKVServiceServer
 // for forward compatibility.
@@ -106,6 +118,7 @@ type KVServiceServer interface {
 	AddPeer(context.Context, *AddPeerRequest) (*AddPeerResponse, error)
 	RemovePeer(context.Context, *RemovePeerRequest) (*RemovePeerResponse, error)
 	ClusterState(context.Context, *ClusterStateRequest) (*ClusterStateResponse, error)
+	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	mustEmbedUnimplementedKVServiceServer()
 }
 
@@ -130,6 +143,9 @@ func (UnimplementedKVServiceServer) RemovePeer(context.Context, *RemovePeerReque
 }
 func (UnimplementedKVServiceServer) ClusterState(context.Context, *ClusterStateRequest) (*ClusterStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClusterState not implemented")
+}
+func (UnimplementedKVServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedKVServiceServer) mustEmbedUnimplementedKVServiceServer() {}
 func (UnimplementedKVServiceServer) testEmbeddedByValue()                   {}
@@ -242,6 +258,24 @@ func _KVService_ClusterState_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KVService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KVServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KVService_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KVServiceServer).Ping(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KVService_ServiceDesc is the grpc.ServiceDesc for KVService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,6 +302,10 @@ var KVService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClusterState",
 			Handler:    _KVService_ClusterState_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _KVService_Ping_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

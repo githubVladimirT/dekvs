@@ -12,6 +12,8 @@ service KVService {
     rpc AddPeer(AddPeerRequest) returns (AddPeerResponse);
     rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse);
     rpc ClusterState(ClusterStateRequest) returns (ClusterStateResponse);
+
+    rpc Ping(PingRequest) returns (PingResponse);
 }
 
 message PutRequest {
@@ -34,7 +36,8 @@ message GetResponse {
 
 message AddPeerRequest {
     string id = 1;
-    string addr = 2;
+    string raft_addr = 2;
+    string grpc_addr = 3;
 }
 
 message AddPeerResponse {
@@ -62,4 +65,10 @@ message Peer {
     string id = 1;
     string addr = 2;
     bool is_leader = 3;
+}
+
+message PingRequest {}
+
+message PingResponse {
+    string node_id = 1;
 }

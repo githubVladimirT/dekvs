@@ -216,7 +216,8 @@ func (x *GetResponse) GetFound() bool {
 type AddPeerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Addr          string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	RaftAddr      string                 `protobuf:"bytes,2,opt,name=raft_addr,json=raftAddr,proto3" json:"raft_addr,omitempty"`
+	GrpcAddr      string                 `protobuf:"bytes,3,opt,name=grpc_addr,json=grpcAddr,proto3" json:"grpc_addr,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -258,9 +259,16 @@ func (x *AddPeerRequest) GetId() string {
 	return ""
 }
 
-func (x *AddPeerRequest) GetAddr() string {
+func (x *AddPeerRequest) GetRaftAddr() string {
 	if x != nil {
-		return x.Addr
+		return x.RaftAddr
+	}
+	return ""
+}
+
+func (x *AddPeerRequest) GetGrpcAddr() string {
+	if x != nil {
+		return x.GrpcAddr
 	}
 	return ""
 }
@@ -561,6 +569,86 @@ func (x *Peer) GetIsLeader() bool {
 	return false
 }
 
+type PingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PingRequest) Reset() {
+	*x = PingRequest{}
+	mi := &file_proto_kv_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PingRequest) ProtoMessage() {}
+
+func (x *PingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_kv_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
+func (*PingRequest) Descriptor() ([]byte, []int) {
+	return file_proto_kv_proto_rawDescGZIP(), []int{11}
+}
+
+type PingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeId        string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PingResponse) Reset() {
+	*x = PingResponse{}
+	mi := &file_proto_kv_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PingResponse) ProtoMessage() {}
+
+func (x *PingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_kv_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
+func (*PingResponse) Descriptor() ([]byte, []int) {
+	return file_proto_kv_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PingResponse) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
 var File_proto_kv_proto protoreflect.FileDescriptor
 
 const file_proto_kv_proto_rawDesc = "" +
@@ -577,10 +665,11 @@ const file_proto_kv_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\"9\n" +
 	"\vGetResponse\x12\x14\n" +
 	"\x05value\x18\x01 \x01(\fR\x05value\x12\x14\n" +
-	"\x05found\x18\x02 \x01(\bR\x05found\"4\n" +
+	"\x05found\x18\x02 \x01(\bR\x05found\"Z\n" +
 	"\x0eAddPeerRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04addr\x18\x02 \x01(\tR\x04addr\"E\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\traft_addr\x18\x02 \x01(\tR\braftAddr\x12\x1b\n" +
+	"\tgrpc_addr\x18\x03 \x01(\tR\bgrpcAddr\"E\n" +
 	"\x0fAddPeerResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"#\n" +
@@ -596,14 +685,18 @@ const file_proto_kv_proto_rawDesc = "" +
 	"\x04Peer\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x12\x1b\n" +
-	"\tis_leader\x18\x03 \x01(\bR\bisLeader2\x8f\x02\n" +
+	"\tis_leader\x18\x03 \x01(\bR\bisLeader\"\r\n" +
+	"\vPingRequest\"'\n" +
+	"\fPingResponse\x12\x17\n" +
+	"\anode_id\x18\x01 \x01(\tR\x06nodeId2\xba\x02\n" +
 	"\tKVService\x12&\n" +
 	"\x03Put\x12\x0e.kv.PutRequest\x1a\x0f.kv.PutResponse\x12&\n" +
 	"\x03Get\x12\x0e.kv.GetRequest\x1a\x0f.kv.GetResponse\x122\n" +
 	"\aAddPeer\x12\x12.kv.AddPeerRequest\x1a\x13.kv.AddPeerResponse\x12;\n" +
 	"\n" +
 	"RemovePeer\x12\x15.kv.RemovePeerRequest\x1a\x16.kv.RemovePeerResponse\x12A\n" +
-	"\fClusterState\x12\x17.kv.ClusterStateRequest\x1a\x18.kv.ClusterStateResponseB\x0fZ\r./proto;protob\x06proto3"
+	"\fClusterState\x12\x17.kv.ClusterStateRequest\x1a\x18.kv.ClusterStateResponse\x12)\n" +
+	"\x04Ping\x12\x0f.kv.PingRequest\x1a\x10.kv.PingResponseB\x0fZ\r./proto;protob\x06proto3"
 
 var (
 	file_proto_kv_proto_rawDescOnce sync.Once
@@ -617,7 +710,7 @@ func file_proto_kv_proto_rawDescGZIP() []byte {
 	return file_proto_kv_proto_rawDescData
 }
 
-var file_proto_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_proto_kv_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_kv_proto_goTypes = []any{
 	(*PutRequest)(nil),           // 0: kv.PutRequest
 	(*PutResponse)(nil),          // 1: kv.PutResponse
@@ -630,6 +723,8 @@ var file_proto_kv_proto_goTypes = []any{
 	(*ClusterStateRequest)(nil),  // 8: kv.ClusterStateRequest
 	(*ClusterStateResponse)(nil), // 9: kv.ClusterStateResponse
 	(*Peer)(nil),                 // 10: kv.Peer
+	(*PingRequest)(nil),          // 11: kv.PingRequest
+	(*PingResponse)(nil),         // 12: kv.PingResponse
 }
 var file_proto_kv_proto_depIdxs = []int32{
 	10, // 0: kv.ClusterStateResponse.peers:type_name -> kv.Peer
@@ -638,13 +733,15 @@ var file_proto_kv_proto_depIdxs = []int32{
 	4,  // 3: kv.KVService.AddPeer:input_type -> kv.AddPeerRequest
 	6,  // 4: kv.KVService.RemovePeer:input_type -> kv.RemovePeerRequest
 	8,  // 5: kv.KVService.ClusterState:input_type -> kv.ClusterStateRequest
-	1,  // 6: kv.KVService.Put:output_type -> kv.PutResponse
-	3,  // 7: kv.KVService.Get:output_type -> kv.GetResponse
-	5,  // 8: kv.KVService.AddPeer:output_type -> kv.AddPeerResponse
-	7,  // 9: kv.KVService.RemovePeer:output_type -> kv.RemovePeerResponse
-	9,  // 10: kv.KVService.ClusterState:output_type -> kv.ClusterStateResponse
-	6,  // [6:11] is the sub-list for method output_type
-	1,  // [1:6] is the sub-list for method input_type
+	11, // 6: kv.KVService.Ping:input_type -> kv.PingRequest
+	1,  // 7: kv.KVService.Put:output_type -> kv.PutResponse
+	3,  // 8: kv.KVService.Get:output_type -> kv.GetResponse
+	5,  // 9: kv.KVService.AddPeer:output_type -> kv.AddPeerResponse
+	7,  // 10: kv.KVService.RemovePeer:output_type -> kv.RemovePeerResponse
+	9,  // 11: kv.KVService.ClusterState:output_type -> kv.ClusterStateResponse
+	12, // 12: kv.KVService.Ping:output_type -> kv.PingResponse
+	7,  // [7:13] is the sub-list for method output_type
+	1,  // [1:7] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -661,7 +758,7 @@ func file_proto_kv_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_kv_proto_rawDesc), len(file_proto_kv_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

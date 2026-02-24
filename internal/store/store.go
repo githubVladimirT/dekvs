@@ -14,6 +14,7 @@ type Command struct {
 
 	PeerID   string `json:"peer_id,omitempty"`
 	PeerAddr string `json:"peer_addr,omitempty"`
+	GRPCAddr string `json:"grpc_addr,omitempty"`
 }
 
 type Store struct {

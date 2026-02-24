@@ -6,7 +6,9 @@ import (
 	"flag"
 	"log"
 	"net"
+	"time"
 
+	"github.com/githubVladimirT/dekvs/internal/detector"
 	dekvsraft "github.com/githubVladimirT/dekvs/internal/raft"
 	"github.com/githubVladimirT/dekvs/internal/store"
 	pb "github.com/githubVladimirT/dekvs/proto"
@@ -18,15 +20,17 @@ import (
 
 var (
 	nodeID   = flag.String("id", "node1", "Node ID")
-	addr     = flag.String("addr", "127.0.0.1:9091", "Node address")
+	raftAddr = flag.String("raft-addr", "127.0.0.1:9091", "Raft address")
 	grpcPort = flag.String("grpc-port", "8081", "gRPC port")
 	join     = flag.Bool("join", false, "Join existing cluster")
 )
 
 type server struct {
 	pb.UnimplementedKVServiceServer
-	store *store.Store
-	raft  *raft.Raft
+	store    *store.Store
+	raft     *raft.Raft
+	nodeID   string
+	detector *detector.FailureDetector
 }
 
 func (s *server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
@@ -65,23 +69,29 @@ func main() {
 	storeInstance := store.NewStore()
 	fsm := dekvsraft.NewFSM(storeInstance, nil)
 
-	r, err := dekvsraft.NewRaft(*nodeID, *addr, fsm, *join)
+	raftInstance, err := dekvsraft.NewRaft(*nodeID, *raftAddr, fsm, *join)
 	if err != nil {
 		log.Fatalf("Failed to start raft: %v", err)
 	}
 
-	fsm.SetRaft(r)
+	fsm.SetRaft(raftInstance)
+
+	detectorr := detector.NewFailureDetector(*nodeID, raftInstance, 5*time.Second, 5*time.Second, 5)
 
 	s := grpc.NewServer()
 	grpcServer := &server{
-		store: storeInstance,
-		raft:  r,
+		store:    storeInstance,
+		raft:     raftInstance,
+		nodeID:   *nodeID,
+		detector: detectorr,
 	}
+
+	go detectorr.Start()
 
 	pb.RegisterKVServiceServer(s, grpcServer)
 	reflection.Register(s)
 
-	log.Printf("Server %s running at %s", *nodeID, *addr)
+	log.Printf("Server %s running at %s", *nodeID, *raftAddr)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
@@ -98,7 +108,8 @@ func (s *server) AddPeer(ctx context.Context, req *pb.AddPeerRequest) (*pb.AddPe
 	cmd := &store.Command{
 		Op:       "addPeer",
 		PeerID:   req.Id,
-		PeerAddr: req.Addr,
+		PeerAddr: req.RaftAddr,
+		GRPCAddr: req.GrpcAddr,
 	}
 
 	b, err := json.Marshal(cmd)
@@ -110,6 +121,8 @@ func (s *server) AddPeer(ctx context.Context, req *pb.AddPeerRequest) (*pb.AddPe
 	if e := f.Error(); e != nil {
 		return &pb.AddPeerResponse{Success: false, Message: e.Error()}, nil
 	}
+
+	s.detector.AddRecentlyAddedWithAddr(req.Id, req.GrpcAddr)
 
 	return &pb.AddPeerResponse{Success: true, Message: "added"}, nil
 }
@@ -158,4 +171,8 @@ func (s *server) ClusterState(ctx context.Context, req *pb.ClusterStateRequest) 
 		Leader: state["leader"],
 		Peers:  peers,
 	}, nil
+}
+
+func (s *server) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
+	return &pb.PingResponse{NodeId: s.nodeID}, nil
 }
