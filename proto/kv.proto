@@ -7,13 +7,12 @@ option go_package = "./proto;proto";
 service KVService {
     rpc Put(PutRequest) returns (PutResponse);
     rpc Get(GetRequest) returns (GetResponse);
-
-    // Управление кластером
-    rpc AddPeer(AddPeerRequest) returns (AddPeerResponse);
-    rpc RemovePeer(RemovePeerRequest) returns (RemovePeerResponse);
-    rpc ClusterState(ClusterStateRequest) returns (ClusterStateResponse);
-
-    rpc Ping(PingRequest) returns (PingResponse);
+    rpc Join(JoinRequest) returns (JoinResponse);
+    rpc Health(HealthRequest) returns (HealthResponse);
+    rpc Status(StatusRequest) returns (StatusResponse);
+    rpc BatchPut(BatchPutRequest) returns (BatchPutResponse);
+    rpc BatchGet(BatchGetRequest) returns (BatchGetResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
 }
 
 message PutRequest {
@@ -34,41 +33,68 @@ message GetResponse {
     bool found = 2;
 }
 
-message AddPeerRequest {
-    string id = 1;
+message JoinRequest {
+    string node_id = 1;
+    string raft_addr = 2;
+}
+
+message JoinResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+    bool healthy = 1;
+    string node_id = 2;
+    bool is_leader = 3;
+    string leader_id = 4;
+}
+
+message StatusRequest {}
+
+message StatusResponse {
+    string node_id = 1;
     string raft_addr = 2;
     string grpc_addr = 3;
+    bool is_leader = 4;
+    string leader_id = 5;
+    uint64 last_log_index = 6;
+    uint64 last_log_term = 7;
+    string state = 8;
+    int32 peer_count = 9;
 }
 
-message AddPeerResponse {
+message BatchPutRequest {
+    repeated KeyValue pairs = 1;
+}
+
+message KeyValue {
+    string key = 1;
+    bytes value = 2;
+}
+
+message BatchPutResponse {
     bool success = 1;
-    string message = 2;
+    int32 inserted_count = 2;
+    repeated string failed_keys = 3;
 }
 
-message RemovePeerRequest {
-    string id = 1;
+message BatchGetRequest {
+    repeated string keys = 1;
 }
 
-message RemovePeerResponse {
+message BatchGetResponse {
+    map<string, bytes> values = 1;
+    repeated string not_found_keys = 2;
+}
+
+message DeleteRequest {
+    string key = 1;
+}
+
+message DeleteResponse {
     bool success = 1;
-    string message = 2;
-}
-
-message ClusterStateRequest {}
-
-message ClusterStateResponse {
-    string leader = 1;
-    repeated Peer peers = 2;
-}
-
-message Peer {
-    string id = 1;
-    string addr = 2;
-    bool is_leader = 3;
-}
-
-message PingRequest {}
-
-message PingResponse {
-    string node_id = 1;
+    bool existed = 2;
 }

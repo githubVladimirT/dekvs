@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'dekvs'
+    static_configs:
+      - targets: ['node0:19090', 'node1:19090', 'node2:19090']
+        labels:
+          group: 'dekvs-cluster'

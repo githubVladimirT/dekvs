@@ -19,12 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KVService_Put_FullMethodName          = "/kv.KVService/Put"
-	KVService_Get_FullMethodName          = "/kv.KVService/Get"
-	KVService_AddPeer_FullMethodName      = "/kv.KVService/AddPeer"
-	KVService_RemovePeer_FullMethodName   = "/kv.KVService/RemovePeer"
-	KVService_ClusterState_FullMethodName = "/kv.KVService/ClusterState"
-	KVService_Ping_FullMethodName         = "/kv.KVService/Ping"
+	KVService_Put_FullMethodName      = "/kv.KVService/Put"
+	KVService_Get_FullMethodName      = "/kv.KVService/Get"
+	KVService_Join_FullMethodName     = "/kv.KVService/Join"
+	KVService_Health_FullMethodName   = "/kv.KVService/Health"
+	KVService_Status_FullMethodName   = "/kv.KVService/Status"
+	KVService_BatchPut_FullMethodName = "/kv.KVService/BatchPut"
+	KVService_BatchGet_FullMethodName = "/kv.KVService/BatchGet"
+	KVService_Delete_FullMethodName   = "/kv.KVService/Delete"
 )
 
 // KVServiceClient is the client API for KVService service.
@@ -33,11 +35,12 @@ const (
 type KVServiceClient interface {
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
-	// Управление кластером
-	AddPeer(ctx context.Context, in *AddPeerRequest, opts ...grpc.CallOption) (*AddPeerResponse, error)
-	RemovePeer(ctx context.Context, in *RemovePeerRequest, opts ...grpc.CallOption) (*RemovePeerResponse, error)
-	ClusterState(ctx context.Context, in *ClusterStateRequest, opts ...grpc.CallOption) (*ClusterStateResponse, error)
-	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error)
+	Health(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error)
+	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
+	BatchPut(ctx context.Context, in *BatchPutRequest, opts ...grpc.CallOption) (*BatchPutResponse, error)
+	BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type kVServiceClient struct {
@@ -68,40 +71,60 @@ func (c *kVServiceClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *kVServiceClient) AddPeer(ctx context.Context, in *AddPeerRequest, opts ...grpc.CallOption) (*AddPeerResponse, error) {
+func (c *kVServiceClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddPeerResponse)
-	err := c.cc.Invoke(ctx, KVService_AddPeer_FullMethodName, in, out, cOpts...)
+	out := new(JoinResponse)
+	err := c.cc.Invoke(ctx, KVService_Join_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *kVServiceClient) RemovePeer(ctx context.Context, in *RemovePeerRequest, opts ...grpc.CallOption) (*RemovePeerResponse, error) {
+func (c *kVServiceClient) Health(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RemovePeerResponse)
-	err := c.cc.Invoke(ctx, KVService_RemovePeer_FullMethodName, in, out, cOpts...)
+	out := new(HealthResponse)
+	err := c.cc.Invoke(ctx, KVService_Health_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *kVServiceClient) ClusterState(ctx context.Context, in *ClusterStateRequest, opts ...grpc.CallOption) (*ClusterStateResponse, error) {
+func (c *kVServiceClient) Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ClusterStateResponse)
-	err := c.cc.Invoke(ctx, KVService_ClusterState_FullMethodName, in, out, cOpts...)
+	out := new(StatusResponse)
+	err := c.cc.Invoke(ctx, KVService_Status_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *kVServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+func (c *kVServiceClient) BatchPut(ctx context.Context, in *BatchPutRequest, opts ...grpc.CallOption) (*BatchPutResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PingResponse)
-	err := c.cc.Invoke(ctx, KVService_Ping_FullMethodName, in, out, cOpts...)
+	out := new(BatchPutResponse)
+	err := c.cc.Invoke(ctx, KVService_BatchPut_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *kVServiceClient) BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchGetResponse)
+	err := c.cc.Invoke(ctx, KVService_BatchGet_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *kVServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, KVService_Delete_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,11 +137,12 @@ func (c *kVServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grp
 type KVServiceServer interface {
 	Put(context.Context, *PutRequest) (*PutResponse, error)
 	Get(context.Context, *GetRequest) (*GetResponse, error)
-	// Управление кластером
-	AddPeer(context.Context, *AddPeerRequest) (*AddPeerResponse, error)
-	RemovePeer(context.Context, *RemovePeerRequest) (*RemovePeerResponse, error)
-	ClusterState(context.Context, *ClusterStateRequest) (*ClusterStateResponse, error)
-	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	Join(context.Context, *JoinRequest) (*JoinResponse, error)
+	Health(context.Context, *HealthRequest) (*HealthResponse, error)
+	Status(context.Context, *StatusRequest) (*StatusResponse, error)
+	BatchPut(context.Context, *BatchPutRequest) (*BatchPutResponse, error)
+	BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedKVServiceServer()
 }
 
@@ -135,17 +159,23 @@ func (UnimplementedKVServiceServer) Put(context.Context, *PutRequest) (*PutRespo
 func (UnimplementedKVServiceServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (UnimplementedKVServiceServer) AddPeer(context.Context, *AddPeerRequest) (*AddPeerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddPeer not implemented")
+func (UnimplementedKVServiceServer) Join(context.Context, *JoinRequest) (*JoinResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
 }
-func (UnimplementedKVServiceServer) RemovePeer(context.Context, *RemovePeerRequest) (*RemovePeerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemovePeer not implemented")
+func (UnimplementedKVServiceServer) Health(context.Context, *HealthRequest) (*HealthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
 }
-func (UnimplementedKVServiceServer) ClusterState(context.Context, *ClusterStateRequest) (*ClusterStateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ClusterState not implemented")
+func (UnimplementedKVServiceServer) Status(context.Context, *StatusRequest) (*StatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
-func (UnimplementedKVServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+func (UnimplementedKVServiceServer) BatchPut(context.Context, *BatchPutRequest) (*BatchPutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchPut not implemented")
+}
+func (UnimplementedKVServiceServer) BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchGet not implemented")
+}
+func (UnimplementedKVServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedKVServiceServer) mustEmbedUnimplementedKVServiceServer() {}
 func (UnimplementedKVServiceServer) testEmbeddedByValue()                   {}
@@ -204,74 +234,110 @@ func _KVService_Get_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KVService_AddPeer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddPeerRequest)
+func _KVService_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JoinRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KVServiceServer).AddPeer(ctx, in)
+		return srv.(KVServiceServer).Join(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KVService_AddPeer_FullMethodName,
+		FullMethod: KVService_Join_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KVServiceServer).AddPeer(ctx, req.(*AddPeerRequest))
+		return srv.(KVServiceServer).Join(ctx, req.(*JoinRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KVService_RemovePeer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemovePeerRequest)
+func _KVService_Health_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KVServiceServer).RemovePeer(ctx, in)
+		return srv.(KVServiceServer).Health(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KVService_RemovePeer_FullMethodName,
+		FullMethod: KVService_Health_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KVServiceServer).RemovePeer(ctx, req.(*RemovePeerRequest))
+		return srv.(KVServiceServer).Health(ctx, req.(*HealthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KVService_ClusterState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ClusterStateRequest)
+func _KVService_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StatusRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KVServiceServer).ClusterState(ctx, in)
+		return srv.(KVServiceServer).Status(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KVService_ClusterState_FullMethodName,
+		FullMethod: KVService_Status_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KVServiceServer).ClusterState(ctx, req.(*ClusterStateRequest))
+		return srv.(KVServiceServer).Status(ctx, req.(*StatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KVService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PingRequest)
+func _KVService_BatchPut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchPutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KVServiceServer).Ping(ctx, in)
+		return srv.(KVServiceServer).BatchPut(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KVService_Ping_FullMethodName,
+		FullMethod: KVService_BatchPut_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KVServiceServer).Ping(ctx, req.(*PingRequest))
+		return srv.(KVServiceServer).BatchPut(ctx, req.(*BatchPutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KVService_BatchGet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchGetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KVServiceServer).BatchGet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KVService_BatchGet_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KVServiceServer).BatchGet(ctx, req.(*BatchGetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KVService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KVServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KVService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KVServiceServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -292,20 +358,28 @@ var KVService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _KVService_Get_Handler,
 		},
 		{
-			MethodName: "AddPeer",
-			Handler:    _KVService_AddPeer_Handler,
+			MethodName: "Join",
+			Handler:    _KVService_Join_Handler,
 		},
 		{
-			MethodName: "RemovePeer",
-			Handler:    _KVService_RemovePeer_Handler,
+			MethodName: "Health",
+			Handler:    _KVService_Health_Handler,
 		},
 		{
-			MethodName: "ClusterState",
-			Handler:    _KVService_ClusterState_Handler,
+			MethodName: "Status",
+			Handler:    _KVService_Status_Handler,
 		},
 		{
-			MethodName: "Ping",
-			Handler:    _KVService_Ping_Handler,
+			MethodName: "BatchPut",
+			Handler:    _KVService_BatchPut_Handler,
+		},
+		{
+			MethodName: "BatchGet",
+			Handler:    _KVService_BatchGet_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _KVService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

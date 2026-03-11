@@ -2,3 +2,4 @@
 /.cspell/
 /cmd/server/server
 /build/*
+/server

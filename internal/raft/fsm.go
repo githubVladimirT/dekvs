@@ -28,12 +28,11 @@ func (f *FSM) Apply(l *raft.Log) interface{} {
 	switch c.Op {
 	case "put":
 		f.store.Apply(l)
-	case "addPeer":
-		f.raft.AddVoter(raft.ServerID(c.PeerID), raft.ServerAddress(c.PeerAddr), 0, 0)
-	case "removePeer":
-		f.raft.RemoveServer(raft.ServerID(c.PeerID), 0, 0)
+	case "delete":
+		return f.store.Apply(l)
+	case "batchPut":
+		return f.store.Apply(l)
 	}
-
 	return nil
 }
 
