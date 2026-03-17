@@ -1,0 +1,50 @@
+groups:
+  - name: dekvs-alerts
+    rules:
+      - alert: DeKVSNodeDown
+        expr: up{job="dekvs"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "DeKVS node {{ $labels.instance }} is down"
+          description: "Node {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes > 1073741824  # 1GB
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 1GB for more than 5 minutes."
+      
+      - alert: DeKVSNoLeader
+        expr: sum(dekvs_raft_state == 2) == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "DeKVS cluster has no leader"
+          description: "No leader node detected in the cluster for more than 30 seconds."
+
+      - alert: DeKVSDataInconsistency
+        expr: max(dekvs_keys_total) - min(dekvs_keys_total) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "DeKVS data inconsistency detected"
+          description: "Key count differs between nodes. Max: {{ $value }}"
+
+      - alert: DeKVSHighErrorRate
+        expr: |
+          sum(rate(dekvs_put_requests_total{status="error"}[5m])) 
+          / 
+          sum(rate(dekvs_put_requests_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on DeKVS Put operations"
+          description: "Error rate is {{ $value | humanizePercentage }}"

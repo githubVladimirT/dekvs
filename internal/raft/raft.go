@@ -19,9 +19,16 @@ import (
 func NewRaft(nodeID string, bindAddr string, advertiseAddr string, fsm *FSM, join bool, leaderAddrs string) (*raft.Raft, error) {
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(nodeID)
+	// Optimized for high throughput
 	config.ElectionTimeout = 1 * time.Second
 	config.HeartbeatTimeout = 1 * time.Second
-	config.CommitTimeout = 1 * time.Second
+	config.LeaderLeaseTimeout = 500 * time.Millisecond
+	config.CommitTimeout = 100 * time.Millisecond
+	config.BatchApplyCh = true
+	config.MaxAppendEntries = 256
+	config.TrailingLogs = 10000
+	config.SnapshotInterval = 60 * time.Second
+	config.SnapshotThreshold = 10000
 
 	logDir := filepath.Join(os.TempDir(), fmt.Sprintf("raft-log-%s", nodeID))
 	os.MkdirAll(logDir, 0755)

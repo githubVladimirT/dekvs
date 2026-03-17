@@ -11,7 +11,7 @@ import (
 
 func TestNewFSM(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	if fsm == nil {
 		t.Fatal("NewFSM() returned nil")
@@ -23,7 +23,7 @@ func TestNewFSM(t *testing.T) {
 
 func TestFSM_ApplyPut(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	cmd := store.Command{
 		Op:    "put",
@@ -53,7 +53,7 @@ func TestFSM_ApplyPut(t *testing.T) {
 
 func TestFSM_ApplyDelete(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	s.Set("testkey", []byte("testvalue"))
 
@@ -81,7 +81,7 @@ func TestFSM_ApplyDelete(t *testing.T) {
 
 func TestFSM_ApplyBatchPut(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	cmd := store.Command{
 		Op: "batchPut",
@@ -121,7 +121,7 @@ func TestFSM_ApplyBatchPut(t *testing.T) {
 
 func TestFSM_ApplyInvalidCommand(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	log := &raft.Log{
 		Data: []byte("invalid json"),
@@ -138,7 +138,7 @@ func TestFSM_Snapshot(t *testing.T) {
 	s.Set("key1", []byte("value1"))
 	s.Set("key2", []byte("value2"))
 
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	snapshot, err := fsm.Snapshot()
 	if err != nil {
@@ -152,7 +152,7 @@ func TestFSM_Snapshot(t *testing.T) {
 
 func TestFSM_Restore(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	data := map[string][]byte{
 		"key1": []byte("value1"),
@@ -189,7 +189,7 @@ func TestFSM_Restore(t *testing.T) {
 
 func TestFSM_RestoreInvalidData(t *testing.T) {
 	s := store.NewStore()
-	fsm := NewFSM(s, nil)
+	fsm := NewFSM(s, nil, nil)
 
 	rc := &readCloser{bytes.NewReader([]byte("invalid json"))}
 	err := fsm.Restore(rc)

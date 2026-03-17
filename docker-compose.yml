@@ -94,6 +94,105 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  node3:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+    container_name: dekvs-node3
+    hostname: node3
+    ports:
+      - "8083:8080"
+      - "9093:9090"
+    command: >
+      --id=node3
+      --raft-bind-addr=0.0.0.0:9090
+      --raft-adv-addr=node3:9090
+      --grpc-port=8080
+      --join=true
+      --leader-addrs=node0:8080
+      --enable-metrics=true
+      --metrics-port=19090
+    networks:
+      - dekvs-network
+    depends_on:
+      node0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpcurl", "-plaintext", "-max-time", "5", "localhost:8080", "kv.KVService/Get"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  node4:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+    container_name: dekvs-node4
+    hostname: node4
+    ports:
+      - "8084:8080"
+      - "9094:9090"
+    command: >
+      --id=node4
+      --raft-bind-addr=0.0.0.0:9090
+      --raft-adv-addr=node4:9090
+      --grpc-port=8080
+      --join=true
+      --leader-addrs=node0:8080
+      --enable-metrics=true
+      --metrics-port=19090
+    networks:
+      - dekvs-network
+    depends_on:
+      node0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpcurl", "-plaintext", "-max-time", "5", "localhost:8080", "kv.KVService/Get"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  node5:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+    container_name: dekvs-node5
+    hostname: node5
+    ports:
+      - "8085:8080"
+      - "9095:9090"
+    command: >
+      --id=node5
+      --raft-bind-addr=0.0.0.0:9090
+      --raft-adv-addr=node5:9090
+      --grpc-port=8080
+      --join=true
+      --leader-addrs=node0:8080
+      --enable-metrics=true
+      --metrics-port=19090
+    networks:
+      - dekvs-network
+    depends_on:
+      node0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpcurl", "-plaintext", "-max-time", "5", "localhost:8080", "kv.KVService/Get"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:latest
     container_name: dekvs-prometheus
@@ -110,6 +209,9 @@ services:
       - node0
       - node1
       - node2
+      - node3
+      - node4
+      - node5
     restart: unless-stopped
 
 networks:

@@ -21,14 +21,14 @@ import (
 )
 
 var (
-	nodeID         = flag.String("id", "node1", "Node ID")
-	raftBindAddr   = flag.String("raft-bind-addr", "127.0.0.1:9091", "Raft bind address")
-	raftAdvAddr    = flag.String("raft-adv-addr", "", "Raft advertise address (optional)")
-	grpcPort       = flag.String("grpc-port", "8081", "gRPC port")
-	join           = flag.Bool("join", false, "Join existing cluster")
-	leaderAddrs    = flag.String("leader-addrs", "", "Comma-separated leader addresses to join")
-	metricsPort    = flag.String("metrics-port", "9090", "Prometheus metrics port")
-	enableMetrics  = flag.Bool("enable-metrics", false, "Enable Prometheus metrics endpoint")
+	nodeID        = flag.String("id", "node1", "Node ID")
+	raftBindAddr  = flag.String("raft-bind-addr", "127.0.0.1:9091", "Raft bind address")
+	raftAdvAddr   = flag.String("raft-adv-addr", "", "Raft advertise address (optional)")
+	grpcPort      = flag.String("grpc-port", "8081", "gRPC port")
+	join          = flag.Bool("join", false, "Join existing cluster")
+	leaderAddrs   = flag.String("leader-addrs", "", "Comma-separated leader addresses to join")
+	metricsPort   = flag.String("metrics-port", "9090", "Prometheus metrics port")
+	enableMetrics = flag.Bool("enable-metrics", false, "Enable Prometheus metrics endpoint")
 )
 
 // Prometheus metrics
@@ -87,11 +87,11 @@ func init() {
 
 type server struct {
 	pb.UnimplementedKVServiceServer
-	store      *store.Store
-	raft       *raft.Raft
-	nodeID     string
-	grpcAddr   string
-	startTime  time.Time
+	store     *store.Store
+	raft      *raft.Raft
+	nodeID    string
+	grpcAddr  string
+	startTime time.Time
 }
 
 func (s *server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
@@ -107,7 +107,7 @@ func (s *server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 		return nil, err
 	}
 
-	f := s.raft.Apply(b, 10000)
+	f := s.raft.Apply(b, 3000)
 	if e := f.Error(); e != nil {
 		metricPutRequests.WithLabelValues("error").Inc()
 		return nil, e
@@ -154,10 +154,10 @@ func (s *server) Health(ctx context.Context, req *pb.HealthRequest) (*pb.HealthR
 	leaderID := string(leaderAddr)
 
 	return &pb.HealthResponse{
-		Healthy:   true,
-		NodeId:    s.nodeID,
-		IsLeader:  s.raft.State() == raft.Leader,
-		LeaderId:  leaderID,
+		Healthy:  true,
+		NodeId:   s.nodeID,
+		IsLeader: s.raft.State() == raft.Leader,
+		LeaderId: leaderID,
 	}, nil
 }
 
@@ -220,7 +220,7 @@ func (s *server) BatchPut(ctx context.Context, req *pb.BatchPutRequest) (*pb.Bat
 		return nil, err
 	}
 
-	f := s.raft.Apply(b, 30000)
+	f := s.raft.Apply(b, 5000)
 	if e := f.Error(); e != nil {
 		metricBatchRequests.WithLabelValues("put", "error").Inc()
 		return nil, e
@@ -256,7 +256,7 @@ func (s *server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteR
 		return nil, err
 	}
 
-	f := s.raft.Apply(b, 10000)
+	f := s.raft.Apply(b, 3000)
 	if e := f.Error(); e != nil {
 		metricDeleteRequests.WithLabelValues("error").Inc()
 		return nil, e
@@ -299,7 +299,11 @@ func main() {
 	}
 
 	storeInstance := store.NewStore()
-	fsm := dekvsraft.NewFSM(storeInstance, nil)
+
+	// Create FSM with a hook to update metrics after each apply
+	fsm := dekvsraft.NewFSM(storeInstance, nil, func() {
+		metricKeysCount.Set(float64(storeInstance.Count()))
+	})
 
 	raftInstance, err := dekvsraft.NewRaft(*nodeID, *raftBindAddr, *raftAdvAddr, fsm, *join, *leaderAddrs)
 	if err != nil {
