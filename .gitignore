@@ -3,3 +3,4 @@
 /cmd/server/server
 /build/*
 /server
+/tests/stress_client

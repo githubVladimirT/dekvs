@@ -18,6 +18,7 @@ The system is designed to be resilient against node failures and network partiti
 - **Batch Operations**: `BatchPut`, `BatchGet` for efficient bulk operations.
 - **Health & Status Endpoints**: Monitor node health and cluster status.
 - **Prometheus Metrics**: Built-in metrics endpoint for monitoring.
+- **Grafana Dashboards**: Pre-configured dashboards for visualizing cluster metrics.
 - **Docker Support**: Full Docker and docker-compose support for easy deployment and testing.
 - **Reflection Support**: gRPC reflection enabled for easy debugging and introspection.
 - **Cross-Platform**: Runs on Linux, macOS, and Windows.
@@ -53,8 +54,9 @@ docker-compose down
 ```
 
 This starts:
-- 3 DeKVS nodes (node0, node1, node2)
+- 6 DeKVS nodes (node0-node5)
 - Prometheus for metrics collection
+- Grafana for visualization (http://localhost:3000, admin/admin)
 
 ### Running Locally
 
@@ -157,12 +159,13 @@ This process is fully automatic and typically completes within seconds.
 
 | Port | Purpose |
 |------|---------|
-| 8080-8082 | gRPC API (per node) |
-| 9090-9092 | Raft consensus protocol (per node) |
+| 8080-8085 | gRPC API (per node) |
+| 9090-9095 | Raft consensus protocol (per node) |
 | 19090 | Prometheus metrics (internal, per node) |
 | 30090 | Prometheus UI (when using docker-compose) |
+| 3000 | Grafana UI (when using docker-compose) |
 
-**Note**: In Docker deployments, metrics ports (19090) are only exposed internally for Prometheus scraping. Access Prometheus UI at `http://localhost:30090`.
+**Note**: In Docker deployments, metrics ports (19090) are only exposed internally for Prometheus scraping. Access Prometheus UI at `http://localhost:30090` and Grafana at `http://localhost:3000` (default credentials: admin/admin).
 
 ### Docker Configuration
 
@@ -292,16 +295,97 @@ message BatchGetResponse {
 
 The following metrics are exposed when `--enable-metrics=true`:
 
+### Request Metrics
+
 | Metric | Type | Description |
 |--------|------|-------------|
-| `dekvs_put_requests_total` | Counter | Total Put requests (labeled by status) |
-| `dekvs_get_requests_total` | Counter | Total Get requests (labeled by status) |
-| `dekvs_delete_requests_total` | Counter | Total Delete requests (labeled by status) |
-| `dekvs_batch_requests_total` | Counter | Total Batch requests (labeled by type and status) |
-| `dekvs_raft_state` | Gauge | Current Raft state per node |
+| `dekvs_put_requests_total` | Counter | Total Put requests (labeled by status: success/error) |
+| `dekvs_get_requests_total` | Counter | Total Get requests (labeled by status: found/not_found/error) |
+| `dekvs_delete_requests_total` | Counter | Total Delete requests (labeled by status: success/error) |
+| `dekvs_batch_requests_total` | Counter | Total Batch requests (labeled by type: put/get and status) |
+| `dekvs_request_latency_seconds` | Histogram | Request latency distribution (labeled by operation) |
+
+### Cluster & Raft Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `dekvs_raft_state` | Gauge | Current Raft state per node (0=Follower, 1=Candidate, 2=Leader, 3=Shutdown) |
+| `dekvs_raft_log_index` | Gauge | Current Raft log index per node |
+| `dekvs_raft_pending_requests` | Gauge | Number of pending Raft requests per node |
+| `dekvs_leader_changes_total` | Counter | Total number of leader changes in the cluster |
 | `dekvs_keys_total` | Gauge | Total number of keys in the store |
+| `dekvs_uptime_seconds` | Gauge | Node uptime in seconds |
 
 Access metrics at `http://localhost:19090/metrics` (or the configured metrics port).
+
+## Grafana Dashboards
+
+When running with docker-compose, Grafana is automatically configured with:
+- **Pre-configured Prometheus datasource** - No manual setup required
+- **Auto-provisioned dashboard** - "DeKVS Cluster Monitoring" dashboard with comprehensive visualizations
+
+### Dashboard Features
+
+The Grafana dashboard includes:
+
+1. **Cluster Overview** - Real-time status of all nodes
+   - Node state (Follower/Candidate/Leader)
+   - Total keys in the cluster
+   - Active node count
+   - Leader changes counter
+   - Node uptime
+   - Raft log index
+
+2. **Request Rates (per second)** - Traffic visualization
+   - Get requests/sec by status (per node)
+   - Put requests/sec by status (per node)
+   - Delete requests/sec by status (per node)
+   - Batch requests/sec (per node)
+   - Total cluster request rate (aggregated)
+
+3. **Performance & Latency** - Response time analysis
+   - Request latency percentiles (p50, p95, p99)
+   - Average request latency by operation
+
+4. **Raft Consensus** - Cluster health monitoring
+   - Raft log index across all nodes
+   - Pending Raft requests
+   - Raft state visualization
+   - Node uptime comparison
+
+5. **Error Analysis** - Troubleshooting
+   - Write error rate by node
+   - Get request outcomes (not_found vs errors)
+
+### Accessing Grafana
+
+1. Open http://localhost:3000 in your browser
+2. Login with credentials: `admin` / `admin`
+3. Navigate to Dashboards → "DeKVS Cluster Monitoring"
+4. Use the "Node" dropdown to filter metrics by specific node
+
+### Useful PromQL Queries
+
+Here are some useful queries for custom analysis:
+
+```promql
+# Request rate per second (1m average)
+rate(dekvs_put_requests_total[1m])
+rate(dekvs_get_requests_total[1m])
+rate(dekvs_delete_requests_total[1m])
+
+# Error rate percentage
+sum(rate(dekvs_put_requests_total{status="error"}[1m])) / sum(rate(dekvs_put_requests_total[1m])) * 100
+
+# 95th percentile latency
+histogram_quantile(0.95, rate(dekvs_request_latency_seconds_bucket[1m]))
+
+# Leader changes over time
+rate(dekvs_leader_changes_total[5m])
+
+# Keys distribution across nodes
+dekvs_keys_total
+```
 
 ---
 
@@ -330,6 +414,7 @@ docker-compose down
 ## Planned Features
 
 - [x] Prometheus metrics
+- [x] Grafana dashboards
 - [x] Batch operations
 - [x] Docker/docker-compose support
 - [x] Health and status endpoints
@@ -370,6 +455,13 @@ If you see "local bind address is not advertisable":
 1. Ensure `--enable-metrics=true` flag is set
 2. Verify the metrics port is accessible
 3. Check Prometheus configuration in `prometheus.yml`
+
+### Grafana dashboard not loading
+
+1. Ensure Prometheus is running and healthy
+2. Check that the Prometheus datasource is configured (Configuration → Data sources)
+3. Verify Prometheus is scraping all nodes: check Status → Targets in Prometheus UI
+4. Reload the dashboard or refresh (click the refresh button or press 'r')
 
 ---
 

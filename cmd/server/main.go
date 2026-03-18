@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	dekvsraft "github.com/githubVladimirT/dekvs/internal/raft"
@@ -74,6 +75,42 @@ var (
 			Help: "Total number of keys in the store",
 		},
 	)
+	// Additional metrics for enhanced monitoring
+	metricRequestLatency = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "dekvs_request_latency_seconds",
+			Help:    "Request latency in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"operation"},
+	)
+	metricLeaderChanges = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "dekvs_leader_changes_total",
+			Help: "Total number of leader changes",
+		},
+	)
+	metricRaftLogIndex = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "dekvs_raft_log_index",
+			Help: "Current Raft log index",
+		},
+		[]string{"node_id"},
+	)
+	metricRaftPendingRequests = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "dekvs_raft_pending_requests",
+			Help: "Number of pending Raft requests",
+		},
+		[]string{"node_id"},
+	)
+	metricUptime = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "dekvs_uptime_seconds",
+			Help: "Node uptime in seconds",
+		},
+		[]string{"node_id"},
+	)
 )
 
 func init() {
@@ -83,18 +120,29 @@ func init() {
 	prometheus.MustRegister(metricBatchRequests)
 	prometheus.MustRegister(metricRaftState)
 	prometheus.MustRegister(metricKeysCount)
+	prometheus.MustRegister(metricRequestLatency)
+	prometheus.MustRegister(metricLeaderChanges)
+	prometheus.MustRegister(metricRaftLogIndex)
+	prometheus.MustRegister(metricRaftPendingRequests)
+	prometheus.MustRegister(metricUptime)
 }
 
 type server struct {
 	pb.UnimplementedKVServiceServer
-	store     *store.Store
-	raft      *raft.Raft
-	nodeID    string
-	grpcAddr  string
-	startTime time.Time
+	store          *store.Store
+	raft           *raft.Raft
+	nodeID         string
+	grpcAddr       string
+	startTime      time.Time
+	lastLeaderAddr raft.ServerAddress
 }
 
 func (s *server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
+	start := time.Now()
+	defer func() {
+		metricRequestLatency.WithLabelValues("put").Observe(time.Since(start).Seconds())
+	}()
+
 	cmd := &store.Command{
 		Op:    "put",
 		Key:   req.Key,
@@ -118,6 +166,11 @@ func (s *server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, 
 }
 
 func (s *server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
+	start := time.Now()
+	defer func() {
+		metricRequestLatency.WithLabelValues("get").Observe(time.Since(start).Seconds())
+	}()
+
 	value, found := s.store.Get(req.Key)
 	if found {
 		metricGetRequests.WithLabelValues("found").Inc()
@@ -166,6 +219,14 @@ func (s *server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 	leaderAddr := s.raft.Leader()
 	leaderID := string(leaderAddr)
 
+	// Track leader changes
+	if leaderAddr != "" && leaderAddr != s.lastLeaderAddr {
+		if s.lastLeaderAddr != "" {
+			metricLeaderChanges.Inc()
+		}
+		s.lastLeaderAddr = leaderAddr
+	}
+
 	peerCount := len(cfg.Servers) - 1
 	if peerCount < 0 {
 		peerCount = 0
@@ -185,6 +246,8 @@ func (s *server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 
 	metricRaftState.WithLabelValues(s.nodeID).Set(float64(s.raft.State()))
 	metricKeysCount.Set(float64(s.store.Count()))
+	metricRaftLogIndex.WithLabelValues(s.nodeID).Set(float64(s.raft.LastIndex()))
+	metricUptime.WithLabelValues(s.nodeID).Set(time.Since(s.startTime).Seconds())
 
 	return &pb.StatusResponse{
 		NodeId:       s.nodeID,
@@ -200,6 +263,11 @@ func (s *server) Status(ctx context.Context, req *pb.StatusRequest) (*pb.StatusR
 }
 
 func (s *server) BatchPut(ctx context.Context, req *pb.BatchPutRequest) (*pb.BatchPutResponse, error) {
+	start := time.Now()
+	defer func() {
+		metricRequestLatency.WithLabelValues("batch_put").Observe(time.Since(start).Seconds())
+	}()
+
 	if len(req.Pairs) == 0 {
 		return &pb.BatchPutResponse{Success: true}, nil
 	}
@@ -234,6 +302,11 @@ func (s *server) BatchPut(ctx context.Context, req *pb.BatchPutRequest) (*pb.Bat
 }
 
 func (s *server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.BatchGetResponse, error) {
+	start := time.Now()
+	defer func() {
+		metricRequestLatency.WithLabelValues("batch_get").Observe(time.Since(start).Seconds())
+	}()
+
 	values, notFound := s.store.GetBatch(req.Keys)
 
 	metricBatchRequests.WithLabelValues("get", "success").Inc()
@@ -245,6 +318,11 @@ func (s *server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Bat
 }
 
 func (s *server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	start := time.Now()
+	defer func() {
+		metricRequestLatency.WithLabelValues("delete").Observe(time.Since(start).Seconds())
+	}()
+
 	cmd := &store.Command{
 		Op:  "delete",
 		Key: req.Key,
@@ -312,13 +390,29 @@ func main() {
 
 	fsm.SetRaft(raftInstance)
 
+	// Start periodic metric collection
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			// Update pending requests metric (approximate from raft stats)
+			stats := raftInstance.Stats()
+			if pendingStr, ok := stats["pending"]; ok {
+				if pending, err := strconv.ParseFloat(pendingStr, 64); err == nil {
+					metricRaftPendingRequests.WithLabelValues(*nodeID).Set(pending)
+				}
+			}
+		}
+	}()
+
 	s := grpc.NewServer()
 	grpcServer := &server{
-		store:     storeInstance,
-		raft:      raftInstance,
-		nodeID:    *nodeID,
-		grpcAddr:  fmt.Sprintf("0.0.0.0:%s", *grpcPort),
-		startTime: time.Now(),
+		store:          storeInstance,
+		raft:           raftInstance,
+		nodeID:         *nodeID,
+		grpcAddr:       fmt.Sprintf("0.0.0.0:%s", *grpcPort),
+		startTime:      time.Now(),
+		lastLeaderAddr: "",
 	}
 
 	pb.RegisterKVServiceServer(s, grpcServer)
