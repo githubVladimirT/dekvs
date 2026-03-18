@@ -16,7 +16,7 @@
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
@@ -48,7 +48,7 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
@@ -73,7 +73,7 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
@@ -98,7 +98,7 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
@@ -123,7 +123,7 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
@@ -148,7 +148,7 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
@@ -179,7 +179,7 @@
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -219,7 +219,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -259,7 +259,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -299,7 +299,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -342,7 +342,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -392,7 +392,7 @@
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -436,7 +436,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -484,7 +484,7 @@
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -526,7 +526,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -568,7 +568,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -610,7 +610,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -658,7 +658,7 @@
       "type": "row"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -701,7 +701,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "datasource": {"type": "prometheus", "uid": null},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "palette-classic"},
@@ -752,7 +752,7 @@
     "list": [
       {
         "current": {"selected": false, "text": "node0", "value": "node0"},
-        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "datasource": {"type": "prometheus", "uid": null},
         "definition": "label_values(dekvs_raft_state, node_id)",
         "hide": 0,
         "includeAll": false,
