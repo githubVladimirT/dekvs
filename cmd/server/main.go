@@ -390,6 +390,8 @@ func main() {
 
 	fsm.SetRaft(raftInstance)
 
+	startTime := time.Now()
+
 	// Start periodic metric collection
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
@@ -402,6 +404,10 @@ func main() {
 					metricRaftPendingRequests.WithLabelValues(*nodeID).Set(pending)
 				}
 			}
+			// Update Raft state, log index, and uptime
+			metricRaftState.WithLabelValues(*nodeID).Set(float64(raftInstance.State()))
+			metricRaftLogIndex.WithLabelValues(*nodeID).Set(float64(raftInstance.LastIndex()))
+			metricUptime.WithLabelValues(*nodeID).Set(time.Since(startTime).Seconds())
 		}
 	}()
 
@@ -411,7 +417,7 @@ func main() {
 		raft:           raftInstance,
 		nodeID:         *nodeID,
 		grpcAddr:       fmt.Sprintf("0.0.0.0:%s", *grpcPort),
-		startTime:      time.Now(),
+		startTime:      startTime,
 		lastLeaderAddr: "",
 	}
 

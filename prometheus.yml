@@ -8,6 +8,6 @@ rule_files:
 scrape_configs:
   - job_name: 'dekvs'
     static_configs:
-      - targets: ['node0:19090', 'node1:19090', 'node2:19090', 'node3:19090']
+      - targets: ['node0:19090', 'node1:19090', 'node2:19090', 'node3:19090', 'node4:19090', 'node5:19090']
         labels:
           group: 'dekvs-cluster'
