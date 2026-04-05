@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	pb "github.com/githubVladimirT/dekvs/proto"
+	pb "github.com/VT0x00/dekvs/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"

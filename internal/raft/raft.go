@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	pb "github.com/githubVladimirT/dekvs/proto"
+	pb "github.com/VT0x00/dekvs/proto"
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb/v2"
 	"google.golang.org/grpc"

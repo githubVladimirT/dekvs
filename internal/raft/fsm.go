@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/githubVladimirT/dekvs/internal/store"
+	"github.com/VT0x00/dekvs/internal/store"
 	"github.com/hashicorp/raft"
 )
 
