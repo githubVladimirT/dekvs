@@ -8,10 +8,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/githubVladimirT/dekvs/internal/detector"
-	dekvsraft "github.com/githubVladimirT/dekvs/internal/raft"
-	"github.com/githubVladimirT/dekvs/internal/store"
-	pb "github.com/githubVladimirT/dekvs/proto"
+	"github.com/VT0x00/dekvs/internal/detector"
+	dekvsraft "github.com/VT0x00/dekvs/internal/raft"
+	"github.com/VT0x00/dekvs/internal/store"
+	pb "github.com/VT0x00/dekvs/proto"
 	"github.com/hashicorp/raft"
 
 	"google.golang.org/grpc"

@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb/v2"
-	// "github.com/githubVladimirT/dekvs/internal/store"
+	// "github.com/VT0x00/dekvs/internal/store"
 )
 
 func NewRaft(nodeID string, addr string, fsm *FSM, join bool) (*raft.Raft, error) {
