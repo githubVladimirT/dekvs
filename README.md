@@ -15,7 +15,6 @@ The system is designed to be resilient against node failures and network partiti
 - **Dynamic Membership**: Add or remove nodes from the cluster without downtime.
 - **Automatic Failure Detection**: Nodes that become unreachable are automatically detected and removed from the cluster.
 - **Key-Value Operations**: Basic `Put` and `Get` operations.
-- **Leader Redirection**: Clients can connect to any node, which will redirect writes to the current leader. (TODO)
 - **Reflection Support**: gRPC reflection enabled for easy debugging and introspection.
 - **Cross-Platform**: Runs on Linux, macOS, and Windows.
 
